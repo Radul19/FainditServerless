@@ -12,26 +12,9 @@ app.use(json({ limit: '50mb' }));
 app.use(helmet());
 
 
-// app.use(function (_, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   next();
-// });
-
-// /// Permitir CORS (Cross-origin resource sharing) que permite recibir peticiones desde otra app o desde el front
-// app.use(cors())
-
-// app.use(express.urlencoded({ extended: true }));
-
-/// / ROUTES
-
 const { apitest,  registerUser ,searchEmail,verifyEmailCode,editInterest,login} = ctrl;
 
 app.get('/', apitest);
-
-// app.get('/get', getImage);
-
-// app.post('/upload', uploadImage);
 
 app.post('/registerUser', registerUser);
 app.get('/searchEmail/:email', searchEmail);

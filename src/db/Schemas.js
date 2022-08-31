@@ -20,6 +20,17 @@ const UserSchema = new Schema({
   timestamps: true
 })
 
+const FM_ItemSchema = new Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  ownerId: { type: String, required: true },
+  price: { type: String, required: true },
+  url: { type: String, required: true },
+}, {
+  timestamps: true
+})
+
 export const User = model('User', UserSchema)
+export const FM_Item = model('FM_Item', FM_ItemSchema)
 
 // module.exports = model('User', UserSchema)

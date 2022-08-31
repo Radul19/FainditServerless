@@ -1,8 +1,7 @@
-import { User } from '../db/Schemas';
+import { User, FM_Item } from '../db/Schemas';
 import UserPool from './UserPool.js'
 // import 'cross-fetch/polyfill';
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
-// import getSignedUrl from './functions/getSignedURL';
 
 const ctrl = {};
 
@@ -12,51 +11,7 @@ ctrl.apitest = async (_, res) => {
   });
 };
 
-// ctrl.getImage = async (req, res) => {
-//   const { fileName } = req.query;
 
-//   if (!fileName) {
-//     res.status(400).json({
-//       msg: 'Missing fileName',
-//     });
-//     return;
-//   }
-
-//   const fileURL = await getSignedUrl(String(fileName));
-
-//   res.json({
-//     url: fileURL,
-//   });
-// };
-
-// ctrl.uploadImage = async (req, res) => {
-//   const { base64 } = req.body;
-//   const { fileName } = req.body;
-
-//   if (!base64) {
-//     res.status(400).json({
-//       msg: 'Missing base64',
-//     });
-//     return;
-//   }
-//   if (!fileName) {
-//     res.status(400).json({
-//       msg: 'Missing fileName',
-//     });
-//     return;
-//   }
-
-//   try {
-//     const file = await uploadFile(base64, fileName);
-//     res.json({
-//       url: file,
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       msg: err.message,
-//     });
-//   }
-// };
 
 ctrl.registerUser = async (req, res) => {
   console.log("test")
