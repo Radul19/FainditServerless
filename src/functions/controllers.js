@@ -289,8 +289,8 @@ ctrl.updateProfilePicture = async (req, res) => {
 
     const img_id = uuidv4()
 
-    const url = await uploadFile(base64, img_id);
-    await deleteImage(old_img)
+    // const url = await uploadFile(base64, img_id);
+    // const deleteImg = await deleteImage(old_img)
 
     const findUser = await User.findOne({ email: email })
     findUser.profile_pic = img_id

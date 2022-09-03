@@ -15,6 +15,7 @@ export default async (img_id) => {
     }
   } catch (err) {
     console.log("Error", err);
+    throw new Error(err.message);
   }
 };
 
