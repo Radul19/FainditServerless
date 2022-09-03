@@ -2,7 +2,10 @@ import { User, FM_Item } from '../db/Schemas';
 import UserPool from './UserPool.js'
 // import 'cross-fetch/polyfill';
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
-
+import getSignedURL from './getSignedURL';
+import { v4 as uuidv4 } from 'uuid';
+import deleteImage from './deleteImage';
+import uploadFile from './uploadFile';
 const ctrl = {};
 
 ctrl.apitest = async (_, res) => {
@@ -80,7 +83,8 @@ ctrl.registerUser = async (req, res) => {
       console.log(data)
 
       const newUser = new User({
-        name: name + ' ' + middlename,
+        name: name,
+        middlename,
         email,
         birth,
         phone: '+58' + num,
@@ -88,7 +92,7 @@ ctrl.registerUser = async (req, res) => {
         place: "someplace",
         address,
         country: "",
-        profile_pic: "",
+        profile_pic: "profilepicture",
         interest: [],
         market: false,
         viewer: false,
@@ -241,6 +245,69 @@ ctrl.login = (req, res) => {
     })
   }
 }
+ctrl.getProfilePicture = async (req, res) => {
+  try {
+    const { name } = req.params
+    if (!name) {
+      res.status(400).json({
+        msg: 'Missing fileName',
+      });
+      return;
+    }
+    console.log(name)
+
+    const fileURL = await getSignedURL(name);
+
+    res.json({
+      url: fileURL,
+    });
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+ctrl.updateProfilePicture = async (req, res) => {
+  try {
+
+    const { email, base64 ,old_img} = req.body
+
+    if (!base64) {
+      res.status(400).json({
+        msg: 'Missing base64',
+      });
+      return;
+    }
+    if (!email) {
+      res.status(400).json({
+        msg: 'Missing email',
+      });
+      return;
+    }
+
+    const img_id = uuidv4()
+
+    const url = await uploadFile(base64, img_id);
+    await deleteImage(old_img)
+
+    const findUser = await User.findOne({ email: email })
+    findUser.profile_pic = img_id
+    await findUser.save()
+
+    res.json({
+      url,img_id
+    });
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado',
+      error
+    })
+  }
+}
 // ctrl.name = (req, res) => {
 //   try {
 
@@ -261,3 +328,49 @@ export default ctrl;
 // phone_number: The attribute is required
 // address: The attribute is required
 
+
+// ctrl.getImage = async (req, res) => {
+//   const { fileName } = req.query;
+
+//   if (!fileName) {
+//     res.status(400).json({
+//       msg: 'Missing fileName',
+//     });
+//     return;
+//   }
+
+//   const fileURL = await getSignedUrl(String(fileName));
+
+//   res.json({
+//     url: fileURL,
+//   });
+// };
+
+// ctrl.uploadImage = async (req, res) => {
+//   const { base64 } = req.body;
+//   const { fileName } = req.body;
+
+//   if (!base64) {
+//     res.status(400).json({
+//       msg: 'Missing base64',
+//     });
+//     return;
+//   }
+//   if (!fileName) {
+//     res.status(400).json({
+//       msg: 'Missing fileName',
+//     });
+//     return;
+//   }
+
+//   try {
+//     const file = await uploadFile(base64, fileName);
+//     res.json({
+//       url: file,
+//     });
+//   } catch (err) {
+//     res.status(500).json({
+//       msg: err.message,
+//     });
+//   }
+// };

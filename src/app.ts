@@ -12,7 +12,7 @@ app.use(json({ limit: '50mb' }));
 app.use(helmet());
 
 
-const { apitest,  registerUser ,searchEmail,verifyEmailCode,editInterest,login} = ctrl;
+const { apitest,  registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture} = ctrl;
 
 app.get('/', apitest);
 
@@ -21,6 +21,11 @@ app.get('/searchEmail/:email', searchEmail);
 app.post('/verifyEmailCode', verifyEmailCode);
 app.post('/editInterest', editInterest);
 app.post('/login', login);
+app.get('/getProfilePicture/:name', getProfilePicture);
+app.post('/updateProfilePicture', updateProfilePicture);
+
+
+
 
 app.use((_, res, _2) => {
   res.status(404).json({ error: 'NOT FOUND' });
