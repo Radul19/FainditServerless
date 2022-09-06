@@ -22,7 +22,7 @@ const UserSchema = new Schema({
 
 const FM_ItemSchema = new Schema({
   name: { type: String, required: true },
-  email: { type: String, required: true },
+  description: { type: String, required: true },
   ownerId: { type: String, required: true },
   price: { type: String, required: true },
   url: { type: String, required: true },
