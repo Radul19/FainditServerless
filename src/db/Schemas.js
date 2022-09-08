@@ -21,16 +21,22 @@ const UserSchema = new Schema({
 })
 
 const FM_ItemSchema = new Schema({
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  ownerId: { type: String, required: true },
-  price: { type: String, required: true },
-  url: { type: String, required: true },
+  fileName: { type: String, required: true  },
+  description: { type: String, required: true  },
+  ownerId: { type: String, required: true  },
+  price: { type: String, required: true  },
+  base64: {
+    type: String, 
+    required: true,
+    default: 'https://kartox.com/cdnassets/categories/grid/K0502-1_l.jpg',
+  },
 }, {
   timestamps: true
 })
 
 export const User = model('User', UserSchema)
 export const FM_Item = model('FM_Item', FM_ItemSchema)
+
+
 
 // module.exports = model('User', UserSchema)

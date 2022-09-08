@@ -6,6 +6,13 @@ import getSignedURL from './getSignedURL';
 import { v4 as uuidv4 } from 'uuid';
 import deleteImage from './deleteImage';
 import uploadFile from './uploadFile';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
+import mongoose from 'mongoose'
+import { url } from 'inspector';
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+mongoose.connect(process.env.DB)
+
+
 const ctrl = {};
 
 ctrl.apitest = async (_, res) => {
@@ -135,7 +142,7 @@ ctrl.searchEmail = async (req, res) => {
     })
 
 
-    /** ERROR */
+    /* ERROR */
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -309,6 +316,84 @@ ctrl.updateProfilePicture = async (req, res) => {
     })
   }
 }
+
+//Upload Image to S3
+
+ctrl.uploadFile = async (req, res) => {
+
+  try {
+
+    const s3Client = new S3Client({
+      region: process.env.REGION,
+      
+    });
+
+    const buffer = Buffer.from(req.body.base64, "base64");
+
+    const bucketParams = {
+      /* input parameters */
+      Body: buffer,
+      Bucket: process.env.BUCKET_NAME,
+      Key: `prueba/${req.body.fileName}.png`,
+      ContentType: "image/png",
+      acl: "public-read",
+    };
+    const data = await s3Client.send(new PutObjectCommand(bucketParams));
+
+    console.log("Success Upload");
+    //return data
+    // process data.
+  } catch (err) {
+    // error handling.
+    console.log("Error", err);
+    //return res.status(500).send({ error: "Unexpected error during file upload" });
+  } 
+};
+//Get Url the in Objet
+ctrl.getUrlFile = async (req, res) => {
+  try {
+    const client = new S3Client({ region: process.env.REGION });
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.BUCKET_NAME,
+      Key: `prueba/${req.body.fileName}.png`,
+      ResponseContentDisposition: "inline",
+      ResponseContentType: "image/png",
+    });
+    const urlImage = await getSignedUrl(client, command, { expiresIn: 3600 });
+    console.log(ururlImagel)
+    return  urlImage;
+  } catch (error) {}
+};
+//Save the image in the database
+ctrl.saveImage = async (req, res) => {
+  
+  try {
+    const { fileName, ownerId, description, price, base64} = req.body;
+    const fm_Item = new FM_Item({
+      fileName: fileName,
+      ownerId:ownerId,
+      description: description,
+      price: price,
+      base64: urlImage
+  });
+  
+  const imageSaved = await fm_Item.save()
+  
+  return res.json({imageSaved});
+
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+
+
+
 // ctrl.name = (req, res) => {
 //   try {
 
@@ -319,6 +404,9 @@ ctrl.updateProfilePicture = async (req, res) => {
 //     })
 //   }
 // }
+
+
+
 export default ctrl;
 
 
