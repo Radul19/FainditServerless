@@ -318,69 +318,78 @@ ctrl.updateProfilePicture = async (req, res) => {
 }
 
 //Upload Image to S3
-
-ctrl.uploadFile = async (req, res) => {
-
+ctrl.uploadFile = async (base64, fileName) => {
   try {
-
     const s3Client = new S3Client({
-      region: process.env.REGION,
-      
+      region: 'us-east-1',
+      credentials: {
+        accessKeyId: 'AKIAVGAEGM4SMMPUU7PH',
+        secretAccessKey: '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',
+      }
     });
 
-    const buffer = Buffer.from(req.body.base64, "base64");
+    const buffer = Buffer.from(base64, "base64");
 
     const bucketParams = {
-      /* input parameters */
       Body: buffer,
-      Bucket: process.env.BUCKET_NAME,
-      Key: `prueba/${req.body.fileName}.png`,
+      Bucket: 'cultalaimagen',
+      Key: `prueba/${fileName}.png`,
       ContentType: "image/png",
       acl: "public-read",
     };
-    const data = await s3Client.send(new PutObjectCommand(bucketParams));
-
+    await s3Client.send(new PutObjectCommand(bucketParams));
     console.log("Success Upload");
     //return data
     // process data.
   } catch (err) {
     // error handling.
-    console.log("Error", err);
+    console.log("Error", err.message);
     //return res.status(500).send({ error: "Unexpected error during file upload" });
-  } 
+  }
 };
 //Get Url the in Objet
-ctrl.getUrlFile = async (req, res) => {
+ctrl.getUrlFile = async (fileName) => {
   try {
-    const client = new S3Client({ region: process.env.REGION });
-
+    const client = new S3Client({
+      region: 'us-east-1',
+      credentials: {
+        accessKeyId: 'AKIAVGAEGM4SMMPUU7PH',
+        secretAccessKey: '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',
+      }
+    });
     const command = new GetObjectCommand({
       Bucket: process.env.BUCKET_NAME,
-      Key: `prueba/${req.body.fileName}.png`,
+      Key: `prueba/${fileName}.png`,
       ResponseContentDisposition: "inline",
       ResponseContentType: "image/png",
     });
     const urlImage = await getSignedUrl(client, command, { expiresIn: 3600 });
-    console.log(ururlImagel)
-    return  urlImage;
-  } catch (error) {}
+    console.log(urlImage)
+    return urlImage;
+  } catch (error) { 
+    console.log(error);
+  }
 };
 //Save the image in the database
 ctrl.saveImage = async (req, res) => {
-  
+
   try {
-    const { fileName, ownerId, description, price, base64} = req.body;
-    const fm_Item = new FM_Item({
-      fileName: fileName,
-      ownerId:ownerId,
-      description: description,
-      price: price,
-      base64: urlImage
-  });
+    const { fileName, ownerId, description, price, base64 } = req.body;
+    const updateFile = await ctrl.uploadFile(base64, fileName);
+    const getUrlFile = await ctrl.getUrlFile(fileName);
+
+    
+      const fm_Item = new FM_Item({
+        fileName: fileName,
+        ownerId: ownerId,
+        description: description,
+        price: price,
+        base64: getUrlFile
+      });
   
-  const imageSaved = await fm_Item.save()
+      const imageSaved = await fm_Item.save()
   
-  return res.json({imageSaved});
+      return res.json({ imageSaved });
 
 
   } catch (error) {
@@ -390,9 +399,6 @@ ctrl.saveImage = async (req, res) => {
     })
   }
 }
-
-
-
 
 // ctrl.name = (req, res) => {
 //   try {

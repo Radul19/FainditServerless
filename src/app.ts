@@ -13,7 +13,7 @@ app.use(json({ limit: '50mb' }));
 app.use(helmet());
 
 
-const { apitest, registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,saveImage, uploadFile, getUrlFile  } = ctrl;
+const { apitest, registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,saveImage } = ctrl;
 
 app.get('/', apitest);
 
@@ -25,7 +25,7 @@ app.post('/login', login);
 app.get('/getProfilePicture/:name', getProfilePicture);
 app.post('/updateProfilePicture', updateProfilePicture);
 // routers to upload an image to s3 and save it
-app.post('/updateImage',uploadFile, getUrlFile, saveImage);
+app.post('/updateImage',saveImage);
 
 
 app.use((_, res, _2) => {
