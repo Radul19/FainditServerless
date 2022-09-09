@@ -400,72 +400,29 @@ ctrl.saveImage = async (req, res) => {
   }
 }
 
-// ctrl.name = (req, res) => {
-//   try {
-
-//   } catch (error) {
-//     console.log(error)
-//     res.status(500).json({
-//       msg: 'Error inesperado'
-//     })
-//   }
-// }
-
 
 
 export default ctrl;
 
+///////// Correcciones
+/*
+No era necesario crear las funciones "uploadFile" y "getUrlFile" dentro de "ctrl"
+ya que la idea de "ctrl" es de tener solo las funciones de las rutas, ademas que estas funciones que creaste
+ya se encuentran entre los archivos, pero en si no hay ningun problema porque todo funciona, es mas para
+mantener el orden en el código
 
-// name: The attribute is required
-// middle_name: The attribute is required
-// gender: The attribute is required
-// birthdate: The attribute is required
-// phone_number: The attribute is required
-// address: The attribute is required
+Yo me equivoqué explicando y no era necesario guardar la URL de la imagen en mongoDB, ya que el url se va a pedir
+cada vez que se quiera acceder a la imagen, lo que necesitamos es el nombre del archivo "fileName", quizas allí 
+tuviste confución y con razón.
 
+Al momento de retornar la informacion entregas todo lo guardado en MongoDB, no está mal pero hay datos innecesarios
+como el "createdAt" "updatedAt" "__v" , no es mucho pero lo mejor es entregar solo lo que necesitamos, como: 
+- Descripcion
+- Precio
+- Nombre de la imagen o su URL temporal
+- OwnerID
 
-// ctrl.getImage = async (req, res) => {
-//   const { fileName } = req.query;
+Y por ultimo, no entendi por que hay tantos Request en postman hahahaha, podias modificar uno sin tener que copiarlo tantas veces
 
-//   if (!fileName) {
-//     res.status(400).json({
-//       msg: 'Missing fileName',
-//     });
-//     return;
-//   }
-
-//   const fileURL = await getSignedUrl(String(fileName));
-
-//   res.json({
-//     url: fileURL,
-//   });
-// };
-
-// ctrl.uploadImage = async (req, res) => {
-//   const { base64 } = req.body;
-//   const { fileName } = req.body;
-
-//   if (!base64) {
-//     res.status(400).json({
-//       msg: 'Missing base64',
-//     });
-//     return;
-//   }
-//   if (!fileName) {
-//     res.status(400).json({
-//       msg: 'Missing fileName',
-//     });
-//     return;
-//   }
-
-//   try {
-//     const file = await uploadFile(base64, fileName);
-//     res.json({
-//       url: file,
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       msg: err.message,
-//     });
-//   }
-// };
+En general esta muy bien y el objetivo se cumple: subir la imagen y retornar la informacion necesaria
+*/
