@@ -19,6 +19,7 @@ export default async (base64: string, fileName: string): Promise<String> => {
     const url = await getSignedUrl(fileName);
     return url;
   } catch (err) {
-    throw new Error(err.message);
+    // throw new Error(err.message);
+    return err
   }
 };

@@ -12,7 +12,7 @@ app.use(json({ limit: '50mb' }));
 app.use(helmet());
 
 
-const { apitest,  registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture} = ctrl;
+const { apitest,  registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,forgotPasswordSend,forgotPasswordCode} = ctrl;
 
 app.get('/', apitest);
 
@@ -23,6 +23,9 @@ app.post('/editInterest', editInterest);
 app.post('/login', login);
 app.get('/getProfilePicture/:name', getProfilePicture);
 app.post('/updateProfilePicture', updateProfilePicture);
+// app.post('/uploadImage', uploadImage);
+app.post('/forgotPasswordSend', forgotPasswordSend);
+app.post('/forgotPasswordCode', forgotPasswordCode);
 
 
 

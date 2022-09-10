@@ -7,6 +7,7 @@ const UserSchema = new Schema({
   phone: { type: String, required: true },
   id: { type: String, required: true },
   place: { type: String, required: true },
+  middlename: { type: String, required: true },
   address: { type: String, required: false },
   country: { type: String, required: false },
   profile_pic: { type: String, required: false },

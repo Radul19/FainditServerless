@@ -6,6 +6,7 @@ import getSignedURL from './getSignedURL';
 import { v4 as uuidv4 } from 'uuid';
 import deleteImage from './deleteImage';
 import uploadFile from './uploadFile';
+import e from 'express';
 const ctrl = {};
 
 ctrl.apitest = async (_, res) => {
@@ -17,96 +18,56 @@ ctrl.apitest = async (_, res) => {
 
 
 ctrl.registerUser = async (req, res) => {
-  console.log("test")
   // console.log(req.body)
-  const { address, birth, card_id, confirmPassword, email, genre, middlename, name, num, password } = req.body;
+  try {
+    const { address, birth, card_id, confirmPassword, email, genre, middlename, name, num, password } = req.body;
 
 
-  let attributeList = []
+    UserPool.signUp(email, password, [], null, async (err, data) => {
+      if (err) {
+        if (err.code === 'UsernameExistsException') {
+          res.status(409).json({
+            msg: "El correo con el que se intenta registrar ya esta en uso",
+          })
+        } else {
+          res.status(409).json({
+            msg: "Error inesperado, intente nuevamente en unos minutos",
+          })
+        }
+      } else {
 
-  let data_address = {
-    Name: "address",
-    // Value: address
-    Value: 'direccion de prueba'
+        const newUser = new User({
+          name,
+          middlename,
+          email,
+          birth,
+          phone: '+58' + num,
+          id: data.userSub,
+          place: "someplace",
+          address,
+          country: "",
+          profile_pic: "profilepicture",
+          interest: [],
+          market: false,
+          viewer: false,
+          favorite: {},
+          membership: false,
+          notifications: [],
+        })
+        await newUser.save()
+
+        res.status(200).json({
+          msg: "Cuenta creada con exito",
+        })
+      }
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado,itente nuevamente en unos minutos'
+    })
   }
 
-  let data_name = {
-    Name: "name",
-    // Value: name
-    Value: 'nombre de prueba'
-  }
-
-  let data_middle_name = {
-    Name: "middle_name",
-    // Value: middlename
-    Value: 'apellido de prueba'
-  }
-  let data_gender = {
-    Name: "gender",
-    // Value: genre
-    Value: 'genero de prueba'
-  }
-  let data_birthdate = {
-    Name: "birthdate",
-    // Value: birth
-    Value: '2001-01-01'
-  }
-  let data_phone_number = {
-    Name: "phone_number",
-    Value: '+58' + num
-  }
-
-  let att_address = new CognitoUserAttribute(data_address)
-  let att_name = new CognitoUserAttribute(data_name)
-  let att_middle_name = new CognitoUserAttribute(data_middle_name)
-  let att_gender = new CognitoUserAttribute(data_gender)
-  let att_birthdate = new CognitoUserAttribute(data_birthdate)
-  let att_phone_number = new CognitoUserAttribute(data_phone_number)
-
-  attributeList.push(att_address)
-  attributeList.push(att_name)
-  attributeList.push(att_middle_name)
-  attributeList.push(att_gender)
-  attributeList.push(att_birthdate)
-  attributeList.push(att_phone_number)
-
-
-  UserPool.signUp(email, password, attributeList, null, async (err, data) => {
-    if (err) {
-      console.log(err)
-      res.status(409).json({
-        msg: "Error",
-        err
-      })
-    } else {
-
-      console.log(data)
-
-      const newUser = new User({
-        name: name,
-        middlename,
-        email,
-        birth,
-        phone: '+58' + num,
-        id: data.userSub,
-        place: "someplace",
-        address,
-        country: "",
-        profile_pic: "profilepicture",
-        interest: [],
-        market: false,
-        viewer: false,
-        favorite: {},
-        membership: false,
-        notifications: [],
-      })
-      await newUser.save()
-
-      res.status(200).json({
-        msg: "Cuenta creada con exito",
-      })
-    }
-  })
 
 
 };
@@ -191,13 +152,13 @@ ctrl.editInterest = async (req, res) => {
     await user.save()
 
     res.status(200).json({
-      msg: 'Intereses actualizados'
+      msg: 'Intereses actualizados exitosamente!'
     })
 
   } catch (error) {
     console.log(error)
     res.status(500).json({
-      msg: 'Error inesperado'
+      msg: 'Error inesperado, intente nuevamente en unos minutos'
     })
   }
 }
@@ -226,9 +187,16 @@ ctrl.login = (req, res) => {
       },
       onFailure: (err) => {
         // console.log('onFailure: ', err)
-        res.status(403).json({
-          msg: 'Datos incorrectos',
-        })
+        if (err.code === 'UserNotConfirmedException') {
+          res.status(401).json({
+            msg: 'Ingrese el codigo de verificacion enviado a su correo antes de continuar',
+            // userData: user
+          })
+        } else {
+          res.status(403).json({
+            msg: 'Datos incorrectos',
+          })
+        }
       },
       newPasswordReq: (data) => {
         console.log('newPassReq: ', data)
@@ -272,17 +240,17 @@ ctrl.getProfilePicture = async (req, res) => {
 ctrl.updateProfilePicture = async (req, res) => {
   try {
 
-    const { email, base64 ,old_img} = req.body
+    const { email, base64, old_img } = req.body
 
     if (!base64) {
       res.status(400).json({
-        msg: 'Missing base64',
+        msg: 'La imagen seleccionada no es valida, intente con otra imagen',
       });
       return;
     }
     if (!email) {
       res.status(400).json({
-        msg: 'Missing email',
+        msg: 'El correo en uso no es valido',
       });
       return;
     }
@@ -290,22 +258,122 @@ ctrl.updateProfilePicture = async (req, res) => {
     const img_id = uuidv4()
 
 
-    // const url = await uploadFile(base64, img_id);
-    // const deleteImg = await deleteImage(old_img)
+    // let url = ''
 
-    // const findUser = await User.findOne({ email: email })
-    // findUser.profile_pic = img_id
-    // await findUser.save()
+    const url = await uploadFile(base64, img_id);
+    const deleteImg = await deleteImage(old_img)
+
+    const findUser = await User.findOne({ email: email })
+    findUser.profile_pic = img_id
+    await findUser.save()
 
     res.json({
-      url,img_id
+      url, img_id, deleteImg,
+      msg: 'Foto de perfil actualizada con exito!'
     });
 
   } catch (error) {
     console.log(error)
     res.status(500).json({
-      msg: 'Error inesperado',
+      msg: 'Ha ocurrido un error inesperado, porfavor intente nuevamente en unos minutos',
       error
+    })
+  }
+}
+// ctrl.uploadImage = async (req, res) => {
+
+//   const { base64 } = req.body;
+//   const { fileName } = req.body;
+
+//   if (!base64) {
+//     res.status(400).json({
+//       msg: 'Missing base64',
+//     });
+//     return;
+//   }
+//   if (!fileName) {
+//     res.status(400).json({
+//       msg: 'Missing fileName',
+//     });
+//     return;
+//   }
+
+//   try {
+//     const file = await uploadFile(base64, fileName);
+//     res.json({
+//       url: file,
+//     });
+//   } catch (err) {
+//     res.status(500).json({
+//       msg: err.message,
+//     });
+//   }
+// }
+
+ctrl.forgotPasswordSend = async (req, res) => {
+  try {
+    const { email } = req.body
+
+    var cognitoUser = new CognitoUser({
+      Username: email,
+      Pool: UserPool,
+    });
+
+    // console.log(cognitoUser)
+
+    cognitoUser.forgotPassword({
+      onSuccess: function (data) {
+        // successfully initiated reset password request
+        console.log('CodeDeliveryData from forgotPassword: ' + JSON.stringify(data));
+        res.json({ msg: 'Se ha enviado el codigo para el cambio de contraseña' })
+      },
+      onFailure: function (err) {
+        console.log(JSON.stringify(err));
+        res.status(400).json({ msg: 'Ha ocurrido un error inesperado', err })
+      },
+    })
+
+
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+ctrl.forgotPasswordCode = (req, res) => {
+  try {
+
+    const { code, newPassword, email } = req.body
+
+    var cognitoUser = new CognitoUser({
+      Username: email,
+      Pool: UserPool,
+    });
+
+    cognitoUser.confirmPassword(code, newPassword, {
+      onSuccess() {
+        console.log('Password confirmed!');
+        res.json({ msg: 'Su contraseña ha sido actualizada con exito' })
+      },
+      onFailure(err) {
+        console.log(err)
+        if(err.code === 'ExpiredCodeException'){
+          res.status(400).json({ msg: 'El codigo que ha insertado no es válido' })
+        }else if(err.code === 'LimitExceededException'){
+          res.status(400).json({ msg: 'Ha excedido el limite de intentos, intente nuevamente mas tarde', err })
+        
+        }else{
+          res.status(400).json({ msg: 'Ha ocurrido un error inesperado', err })
+        }
+      },
+    });
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
     })
   }
 }
