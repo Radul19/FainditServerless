@@ -1,11 +1,12 @@
 import express, { json } from 'express';
 import helmet from 'helmet';
-
+//import { upload } from'./model/upload'
 
 // import uploadFile from './functions/uploadFile';
 import userFunctions from './Controllers/user';
 import './Models/db';
 // import cors from 'cors'
+
 const app = express();
 
 app.use(json({ limit: '50mb' }));
