@@ -10,7 +10,6 @@ export default async (img_id) => {
       return true
     } else {
       const data = await client.send(new DeleteObjectCommand(bucketParams));
-      console.log("Success. Object deleted.", data);
       return true; // For unit tests.
     }
   } catch (err) {

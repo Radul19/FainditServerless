@@ -1,15 +1,15 @@
-import { User, FM_Item } from '../db/Schemas';
+import { User, FM_Item } from '../Models/Schemas';
 import UserPool from './UserPool.js'
 // import 'cross-fetch/polyfill';
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
-import getSignedURL from './getSignedURL';
+import getSignedURL from '../helpers/getSignedURL';
 import { v4 as uuidv4 } from 'uuid';
-import deleteImage from './deleteImage';
-import uploadFile from './uploadFile';
+import deleteImage from '../helpers/deleteImage';
+import uploadFile from '../helers/uploadFile';
 import e from 'express';
-const ctrl = {};
+const userFunctions = {};
 
-ctrl.apitest = async (_, res) => {
+userFunctions.apitest = async (_, res) => {
   res.json({
     msg: 'Hello World test 2',
   });
@@ -17,7 +17,7 @@ ctrl.apitest = async (_, res) => {
 
 
 
-ctrl.registerUser = async (req, res) => {
+userFunctions.registerUser = async (req, res) => {
   // console.log(req.body)
   try {
     const { address, birth, card_id, confirmPassword, email, genre, middlename, name, num, password } = req.body;
@@ -72,7 +72,7 @@ ctrl.registerUser = async (req, res) => {
 
 };
 
-ctrl.searchEmail = async (req, res) => {
+userFunctions.searchEmail = async (req, res) => {
   try {
     const { email } = req.params
     UserPool.signUp(email, '//**--', [], null, (err, data) => {
@@ -105,7 +105,7 @@ ctrl.searchEmail = async (req, res) => {
   }
 }
 
-ctrl.verifyEmailCode = async (req, res) => {
+userFunctions.verifyEmailCode = async (req, res) => {
   try {
     const { code, email } = req.body
     let userData = {
@@ -144,7 +144,7 @@ ctrl.verifyEmailCode = async (req, res) => {
   }
 }
 
-ctrl.editInterest = async (req, res) => {
+userFunctions.editInterest = async (req, res) => {
   try {
     const { email, interest } = req.body
     const user = await User.findOne({ email: email })
@@ -163,7 +163,7 @@ ctrl.editInterest = async (req, res) => {
   }
 }
 
-ctrl.login = (req, res) => {
+userFunctions.login = async (req, res) => {
   try {
     const { email, password } = req.body
 
@@ -180,6 +180,7 @@ ctrl.login = (req, res) => {
       onSuccess: async (data) => {
         // console.log('Success: ', data)
         const user = await User.findOne({ email: email })
+        console.log(user)
         res.status(200).json({
           msg: 'Cuenta loggeada',
           userData: user
@@ -193,6 +194,7 @@ ctrl.login = (req, res) => {
             // userData: user
           })
         } else {
+          // console.log(err.code)
           res.status(403).json({
             msg: 'Datos incorrectos',
           })
@@ -213,7 +215,7 @@ ctrl.login = (req, res) => {
     })
   }
 }
-ctrl.getProfilePicture = async (req, res) => {
+userFunctions.getProfilePicture = async (req, res) => {
   try {
     const { name } = req.params
     if (!name) {
@@ -237,7 +239,7 @@ ctrl.getProfilePicture = async (req, res) => {
     })
   }
 }
-ctrl.updateProfilePicture = async (req, res) => {
+userFunctions.updateProfilePicture = async (req, res) => {
   try {
 
     const { email, base64, old_img } = req.body
@@ -310,7 +312,7 @@ ctrl.updateProfilePicture = async (req, res) => {
 //   }
 // }
 
-ctrl.forgotPasswordSend = async (req, res) => {
+userFunctions.forgotPasswordSend = async (req, res) => {
   try {
     const { email } = req.body
 
@@ -342,7 +344,7 @@ ctrl.forgotPasswordSend = async (req, res) => {
     })
   }
 }
-ctrl.forgotPasswordCode = (req, res) => {
+userFunctions.forgotPasswordCode = (req, res) => {
   try {
 
     const { code, newPassword, email } = req.body
@@ -387,7 +389,7 @@ ctrl.forgotPasswordCode = (req, res) => {
 //     })
 //   }
 // }
-export default ctrl;
+export default userFunctions;
 
 
 // name: The attribute is required

@@ -3,8 +3,8 @@ import helmet from 'helmet';
 
 
 // import uploadFile from './functions/uploadFile';
-import ctrl from './functions/controllers';
-import './db/db';
+import userFunctions from './Controllers/user';
+import './Models/db';
 // import cors from 'cors'
 const app = express();
 
@@ -12,20 +12,23 @@ app.use(json({ limit: '50mb' }));
 app.use(helmet());
 
 
-const { apitest,  registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,forgotPasswordSend,forgotPasswordCode} = ctrl;
+const { apitest,  registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,forgotPasswordSend,forgotPasswordCode} = userFunctions;
 
 app.get('/', apitest);
 
+/// USER ROUTES
+
+app.post('/login', login);
 app.post('/registerUser', registerUser);
 app.get('/searchEmail/:email', searchEmail);
 app.post('/verifyEmailCode', verifyEmailCode);
 app.post('/editInterest', editInterest);
-app.post('/login', login);
 app.get('/getProfilePicture/:name', getProfilePicture);
 app.post('/updateProfilePicture', updateProfilePicture);
-// app.post('/uploadImage', uploadImage);
 app.post('/forgotPasswordSend', forgotPasswordSend);
 app.post('/forgotPasswordCode', forgotPasswordCode);
+
+//// FAINDIT MARKET ROUTES
 
 
 

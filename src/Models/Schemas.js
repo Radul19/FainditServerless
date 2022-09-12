@@ -26,7 +26,7 @@ const FM_ItemSchema = new Schema({
   email: { type: String, required: true },
   ownerId: { type: String, required: true },
   price: { type: String, required: true },
-  url: { type: String, required: true },
+  img_id: { type: String, required: true },
 }, {
   timestamps: true
 })
