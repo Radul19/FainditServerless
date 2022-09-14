@@ -1,4 +1,4 @@
-import { User, FM_Item } from '../db/Schemas';
+import { User, FM_Item, denunciate } from '../db/Schemas';
 import UserPool from './UserPool.js'
 // import 'cross-fetch/polyfill';
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
@@ -351,10 +351,10 @@ ctrl.uploadFile = async (base64, fileName) => {
 ctrl.getUrlFile = async (fileName) => {
   try {
     const client = new S3Client({
-      region: 'us-east-1',
+      region: process.env.REGION,
       credentials: {
-        accessKeyId: 'AKIAVGAEGM4SMMPUU7PH',
-        secretAccessKey: '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',
+        accessKeyId: process.env.ACCESSKEYID,
+        secretAccessKey: process.env.SECRETACCESSKEY,
       }
     });
     const command = new GetObjectCommand({
@@ -391,6 +391,31 @@ ctrl.saveImage = async (req, res) => {
   
       return res.json({ imageSaved });
 
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//report an item on the marketplaces
+ctrl.denunciate = async (req, res) => {
+
+  try {
+    const denunciates = new denunciate({
+    type: req.body.type,
+    item_id: req.body.item_id,
+    description: req.body.description
+    });
+
+const denunciatesSaved = await denunciates.save()
+
+
+ res.status(200).json({
+  msg: 'Articulo reportado con exito'
+}) 
 
   } catch (error) {
     console.log(error)

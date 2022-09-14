@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose')
+import { Schema, model } from 'mongoose'
 
 const UserSchema = new Schema({
   name: { type: String, required: true },
@@ -34,6 +34,15 @@ const FM_ItemSchema = new Schema({
   timestamps: true
 })
 
+const denunciateSchema = new Schema({
+  item_id: { type: String, required: true  },
+  type: { type: Number, required: true  },
+  description: { type: String, required: true }
+}, {
+  timestamps: true
+})
+
+export const denunciate = model('denunciate', denunciateSchema)
 export const User = model('User', UserSchema)
 export const FM_Item = model('FM_Item', FM_ItemSchema)
 

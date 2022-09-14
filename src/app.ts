@@ -13,7 +13,7 @@ app.use(json({ limit: '50mb' }));
 app.use(helmet());
 
 
-const { apitest, registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,saveImage } = ctrl;
+const { apitest, registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,saveImage,denunciate } = ctrl;
 
 app.get('/', apitest);
 
@@ -26,6 +26,8 @@ app.get('/getProfilePicture/:name', getProfilePicture);
 app.post('/updateProfilePicture', updateProfilePicture);
 // routers to upload an image to s3 and save it
 app.post('/updateImage',saveImage);
+//report an item on the marketplaces
+app.post('/denunciate',denunciate);
 
 
 app.use((_, res, _2) => {
