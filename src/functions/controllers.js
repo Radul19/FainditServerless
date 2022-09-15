@@ -1,4 +1,4 @@
-import { User, FM_Item, denunciate } from '../db/Schemas';
+import { User, FM_Item, denunciate, userIdSchema } from '../db/Schemas';
 import UserPool from './UserPool.js'
 // import 'cross-fetch/polyfill';
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
@@ -424,6 +424,53 @@ const denunciatesSaved = await denunciates.save()
     })
   }
 }
+
+//add Favorites
+ctrl.addFavorites = async (req, res) => {
+  try {
+    const itemId = req.body.item_id;
+    const userId = req.body.user_id;
+    const findUser = await FM_Item.findById(itemId);
+    let favourite = findUser.favorites;
+
+    if (favourite == undefined) {
+      const resUpdate = await FM_Item.updateOne(
+        { _id: itemId },
+        { $set: { favorites: userId } }
+      );
+      res.json({
+        msg: "articulo guardado en favoritos",
+      });
+    } else {
+      if (favourite.indexOf(userId) === -1) {
+        favourite.push(userId);
+        await FM_Item.updateOne(
+          { _id: itemId },
+          { $set: { favorites: favourite } }
+        );
+        res.json({
+          msg: "articulo guardado en favoritos",
+        });
+      } else {
+        favourite.splice(favourite.indexOf(userId), 1, "");
+        const removeFavorite = await FM_Item.updateOne(
+          { _id: itemId },
+          { $set: { favorites: favourite } }
+        );
+        console.log(removeFavorite);
+        res.json({
+          msg: "Articulo removido de tu lista de favoritos",
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+
 
 // ctrl.name = (req, res) => {
 //   try {

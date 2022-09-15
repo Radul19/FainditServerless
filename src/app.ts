@@ -13,7 +13,7 @@ app.use(json({ limit: '50mb' }));
 app.use(helmet());
 
 
-const { apitest, registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,saveImage,denunciate } = ctrl;
+const { apitest, registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,saveImage,denunciate,addFavorites } = ctrl;
 
 app.get('/', apitest);
 
@@ -28,7 +28,8 @@ app.post('/updateProfilePicture', updateProfilePicture);
 app.post('/updateImage',saveImage);
 //report an item on the marketplaces
 app.post('/denunciate',denunciate);
-
+//router for add favorites
+app.post('/addFavorites',addFavorites);
 
 app.use((_, res, _2) => {
   res.status(404).json({ error: 'NOT FOUND' });

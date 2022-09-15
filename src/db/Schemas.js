@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose'
+import { Schema, model, ObjectId } from 'mongoose'
 
 const UserSchema = new Schema({
   name: { type: String, required: true },
@@ -25,6 +25,7 @@ const FM_ItemSchema = new Schema({
   description: { type: String, required: true  },
   ownerId: { type: String, required: true  },
   price: { type: String, required: true  },
+  favorites:[],
   base64: {
     type: String, 
     required: true,
@@ -42,6 +43,9 @@ const denunciateSchema = new Schema({
   timestamps: true
 })
 
+//Schema for find by
+export const userIdSchema = new Schema({ _id: ObjectId }, { versionKey: false });
+export const userIdS = model('userIdS', userIdSchema)
 export const denunciate = model('denunciate', denunciateSchema)
 export const User = model('User', UserSchema)
 export const FM_Item = model('FM_Item', FM_ItemSchema)
