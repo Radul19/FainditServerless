@@ -434,30 +434,19 @@ ctrl.addFavorites = async (req, res) => {
     let favourite = findUser.favorites;
 
     if (favourite == undefined) {
-      const resUpdate = await FM_Item.updateOne(
-        { _id: itemId },
-        { $set: { favorites: userId } }
-      );
+      const resUpdate = await FM_Item.updateOne({ _id: itemId },{ $set: { favorites: userId } });
       res.json({
         msg: "articulo guardado en favoritos",
       });
     } else {
-      if (favourite.indexOf(userId) === -1) {
-        favourite.push(userId);
-        await FM_Item.updateOne(
-          { _id: itemId },
-          { $set: { favorites: favourite } }
-        );
+      if (favourite.indexOf(userId) === -1) { favourite.push(userId);
+        await FM_Item.updateOne( { _id: itemId },{ $set: { favorites: favourite }});
         res.json({
           msg: "articulo guardado en favoritos",
         });
       } else {
-        favourite.splice(favourite.indexOf(userId), 1, "");
-        const removeFavorite = await FM_Item.updateOne(
-          { _id: itemId },
-          { $set: { favorites: favourite } }
-        );
-        console.log(removeFavorite);
+        favourite.splice(favourite.indexOf(userId), 1);
+        const removeFavorite = await FM_Item.updateOne({ _id: itemId }, { $set: { favorites: favourite } });
         res.json({
           msg: "Articulo removido de tu lista de favoritos",
         });
