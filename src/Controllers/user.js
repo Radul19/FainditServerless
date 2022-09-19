@@ -1,13 +1,13 @@
-import { User, FM_Item } from '../Models/Schemas';
+import { User, FM_Item } from '../Models/Users_Schemas';
 import { VerifyUserReq } from '../Models/C_Side_Schemas';
-import UserPool from '../helpers/UserPool'
+import UserPool from '../Helpers/UserPool'
 // import 'cross-fetch/polyfill';
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
-import getSignedURL from '../helpers/getSignedURL';
+import getSignedURL from '../Helpers/getSignedURL';
 import { v4 as uuidv4 } from 'uuid';
-import deleteImage from '../helpers/deleteImage';
-import uploadFile from '../helpers/uploadFile';
-import simpleUploadFile from '../helpers/simpleUploadFile';
+import deleteImage from '../Helpers/deleteImage';
+import uploadFile from '../Helpers/uploadFile';
+import simpleUploadFile from '../Helpers/simpleUploadFile';
 const userFunctions = {};
 
 userFunctions.apitest = async (_, res) => {
@@ -15,8 +15,6 @@ userFunctions.apitest = async (_, res) => {
     msg: 'Hello World test 2',
   });
 };
-
-
 
 userFunctions.registerUser = async (req, res) => {
   // console.log(req.body)
@@ -72,7 +70,6 @@ userFunctions.registerUser = async (req, res) => {
 
 
 };
-
 userFunctions.searchEmail = async (req, res) => {
   try {
     const { email } = req.params
@@ -105,7 +102,6 @@ userFunctions.searchEmail = async (req, res) => {
     })
   }
 }
-
 userFunctions.verifyEmailCode = async (req, res) => {
   try {
     const { code, email } = req.body
@@ -144,7 +140,6 @@ userFunctions.verifyEmailCode = async (req, res) => {
     })
   }
 }
-
 userFunctions.editInterest = async (req, res) => {
   try {
     const { email, interest } = req.body
@@ -163,7 +158,6 @@ userFunctions.editInterest = async (req, res) => {
     })
   }
 }
-
 userFunctions.login = async (req, res) => {
   try {
     const { email, password } = req.body
@@ -283,7 +277,6 @@ userFunctions.updateProfilePicture = async (req, res) => {
     })
   }
 }
-
 userFunctions.forgotPasswordSend = async (req, res) => {
   try {
     const { email } = req.body
