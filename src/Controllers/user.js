@@ -1,12 +1,13 @@
 import { User, FM_Item } from '../Models/Schemas';
-import UserPool from './UserPool.js'
+import { VerifyUserReq } from '../Models/C_Side_Schemas';
+import UserPool from '../helpers/UserPool'
 // import 'cross-fetch/polyfill';
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 import getSignedURL from '../helpers/getSignedURL';
 import { v4 as uuidv4 } from 'uuid';
 import deleteImage from '../helpers/deleteImage';
-import uploadFile from '../helers/uploadFile';
-import e from 'express';
+import uploadFile from '../helpers/uploadFile';
+import simpleUploadFile from '../helpers/simpleUploadFile';
 const userFunctions = {};
 
 userFunctions.apitest = async (_, res) => {
@@ -282,35 +283,6 @@ userFunctions.updateProfilePicture = async (req, res) => {
     })
   }
 }
-// ctrl.uploadImage = async (req, res) => {
-
-//   const { base64 } = req.body;
-//   const { fileName } = req.body;
-
-//   if (!base64) {
-//     res.status(400).json({
-//       msg: 'Missing base64',
-//     });
-//     return;
-//   }
-//   if (!fileName) {
-//     res.status(400).json({
-//       msg: 'Missing fileName',
-//     });
-//     return;
-//   }
-
-//   try {
-//     const file = await uploadFile(base64, fileName);
-//     res.json({
-//       url: file,
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       msg: err.message,
-//     });
-//   }
-// }
 
 userFunctions.forgotPasswordSend = async (req, res) => {
   try {
@@ -361,12 +333,12 @@ userFunctions.forgotPasswordCode = (req, res) => {
       },
       onFailure(err) {
         console.log(err)
-        if(err.code === 'ExpiredCodeException'){
+        if (err.code === 'ExpiredCodeException') {
           res.status(400).json({ msg: 'El codigo que ha insertado no es válido' })
-        }else if(err.code === 'LimitExceededException'){
+        } else if (err.code === 'LimitExceededException') {
           res.status(400).json({ msg: 'Ha excedido el limite de intentos, intente nuevamente mas tarde', err })
-        
-        }else{
+
+        } else {
           res.status(400).json({ msg: 'Ha ocurrido un error inesperado', err })
         }
       },
@@ -379,7 +351,69 @@ userFunctions.forgotPasswordCode = (req, res) => {
     })
   }
 }
-// ctrl.name = (req, res) => {
+userFunctions.verifyIDRequest = async (req, res) => {
+  try {
+
+    const { id_card_b64, selfie_b64, userId, type } = req.body
+
+    const id_card_filename = uuidv4()
+    const selfie_filename = uuidv4()
+
+    const idcard_res = await simpleUploadFile(id_card_b64, id_card_filename)
+    const selfie_res = await simpleUploadFile(selfie_b64, selfie_filename)
+
+    if (idcard_res && selfie_res) {
+      const newReq = new VerifyUserReq({
+        userId,
+        id_card_filename,
+        selfie_filename,
+        type,
+      })
+
+      await newReq.save()
+      res.json({
+        msg: 'Datos eviados correctamente, espere por el equipo de Faindit para verificar su identificación'
+      })
+    } else {
+      res.status(409).json({
+        msg: 'Ha ocurrido un error al intentar procesar las imagenes, intente nuevamente'
+      })
+    }
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado, contate a un administrador para mas informacion'
+    })
+  }
+}
+userFunctions.editUserData = async (req, res) => {
+  try {
+
+    const { name, phone, middlename, address, id } = req.body
+    
+    const user = await User.updateOne({ id:id }, { $set: { name,phone,middlename,address } })
+    console.log(user.matchedCount > 0 )
+    if(user.matchedCount > 0 ){
+      res.json({
+        msg: 'Datos actualizados con exito'
+      })
+    }else{
+      res.status(404).json({
+        msg: 'Usuario no econtrado, los datos no se han actualizado'
+      })
+    }
+
+
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+// userFunctions.name = (req, res) => {
 //   try {
 
 //   } catch (error) {
@@ -390,58 +424,3 @@ userFunctions.forgotPasswordCode = (req, res) => {
 //   }
 // }
 export default userFunctions;
-
-
-// name: The attribute is required
-// middle_name: The attribute is required
-// gender: The attribute is required
-// birthdate: The attribute is required
-// phone_number: The attribute is required
-// address: The attribute is required
-
-
-// ctrl.getImage = async (req, res) => {
-//   const { fileName } = req.query;
-
-//   if (!fileName) {
-//     res.status(400).json({
-//       msg: 'Missing fileName',
-//     });
-//     return;
-//   }
-
-//   const fileURL = await getSignedUrl(String(fileName));
-
-//   res.json({
-//     url: fileURL,
-//   });
-// };
-
-// ctrl.uploadImage = async (req, res) => {
-//   const { base64 } = req.body;
-//   const { fileName } = req.body;
-
-//   if (!base64) {
-//     res.status(400).json({
-//       msg: 'Missing base64',
-//     });
-//     return;
-//   }
-//   if (!fileName) {
-//     res.status(400).json({
-//       msg: 'Missing fileName',
-//     });
-//     return;
-//   }
-
-//   try {
-//     const file = await uploadFile(base64, fileName);
-//     res.json({
-//       url: file,
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       msg: err.message,
-//     });
-//   }
-// };
