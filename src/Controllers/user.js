@@ -406,6 +406,7 @@ userFunctions.editUserData = async (req, res) => {
     })
   }
 }
+// Skeleton
 // userFunctions.name = (req, res) => {
 //   try {
 
