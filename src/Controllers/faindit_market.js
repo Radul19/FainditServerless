@@ -1,5 +1,5 @@
-import { FM_Item, denunciate } from '../db/Fm_Schemas';
-import UserPool from './UserPool.js'
+import { FM_Item, denunciate } from '../Models/FM_Schemas';
+import UserPool from '../Helpers/UserPool'
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 import getSignedURL from '../Helpers/getSignedURL';
 import { v4 as uuidv4 } from 'uuid';

@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose')
+const { Schema, model, ObjectId } = require('mongoose')
 
 const FM_ItemSchema = new Schema({
   name: { type: String, required: true },
@@ -20,7 +20,7 @@ const denunciateSchema = new Schema({
 
 
 //Schema for find by
-export const userIdS = model('userIdS', userIdSchema)
 export const userIdSchema = new Schema({ _id: ObjectId }, { versionKey: false });
+export const userIdS = model('userIdS', userIdSchema)
 export const FM_Item = model('FM_Item', FM_ItemSchema)
 export const denunciate = model('denunciate', denunciateSchema)
