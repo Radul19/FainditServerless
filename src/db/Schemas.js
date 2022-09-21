@@ -25,12 +25,15 @@ const FM_ItemSchema = new Schema({
   description: { type: String, required: true  },
   ownerId: { type: String, required: true  },
   price: { type: String, required: true  },
+  viewed: { type: String ,default:0 },
+  interactions: { type: String, default:0  },
   favorites:[],
   base64: {
     type: String, 
     required: true,
     default: 'https://kartox.com/cdnassets/categories/grid/K0502-1_l.jpg',
   },
+  categories:[]
 }, {
   timestamps: true
 })

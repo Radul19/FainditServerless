@@ -13,7 +13,7 @@ app.use(json({ limit: '50mb' }));
 app.use(helmet());
 
 
-const { apitest, registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,saveImage,denunciate,addFavorites } = ctrl;
+const { apitest, registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,saveImage,denunciate,addFavorites,getAllArticles, editArticle } = ctrl;
 
 app.get('/', apitest);
 
@@ -30,6 +30,10 @@ app.post('/updateImage',saveImage);
 app.post('/denunciate',denunciate);
 //router for add favorites
 app.post('/addFavorites',addFavorites);
+//getAllArticles
+app.get('/:ownerId/id',getAllArticles);
+//Edit an article
+app.post('/editarticle',editArticle);
 
 app.use((_, res, _2) => {
   res.status(404).json({ error: 'NOT FOUND' });
