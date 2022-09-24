@@ -2,7 +2,7 @@ import { User } from '../Models/Users_Schemas';
 import { VerifyUserReq } from '../Models/C_Side_Schemas';
 import UserPool from '../Helpers/UserPool'
 // import 'cross-fetch/polyfill';
-import { CognitoUserAttribute, CognitoUser, AuthenticationDetails, } from 'amazon-cognito-identity-js';
+import { CognitoUser, AuthenticationDetails, } from 'amazon-cognito-identity-js';
 import getSignedURL from '../Helpers/getSignedURL';
 import { v4 as uuidv4 } from 'uuid';
 import deleteImage from '../Helpers/deleteImage';
