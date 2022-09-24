@@ -24,9 +24,10 @@ const FM_ItemSchema = new Schema({
   fileName: { type: String, required: true  },
   description: { type: String, required: true  },
   ownerId: { type: String, required: true  },
-  price: { type: String, required: true  },
+  price: { type: Number, required: true  },
   viewed: { type: String ,default:0 },
   interactions: { type: String, default:0  },
+  place: { type: String, required: true   },
   favorites:[],
   base64: {
     type: String, 

@@ -13,7 +13,7 @@ app.use(json({ limit: '50mb' }));
 app.use(helmet());
 
 
-const { apitest, registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,saveImage,denunciate,addFavorites,getAllArticles, editArticle } = ctrl;
+const { apitest, registerUser ,searchEmail,verifyEmailCode,editInterest,login,getProfilePicture,updateProfilePicture,saveImage,denunciate,addFavorites,getAllArticles, editArticle,findFmiItem } = ctrl;
 
 app.get('/', apitest);
 
@@ -34,6 +34,8 @@ app.post('/addFavorites',addFavorites);
 app.get('/:ownerId/id',getAllArticles);
 //Edit an article
 app.post('/editarticle',editArticle);
+//item finder
+app.post('/findFmiItem',findFmiItem);
 
 app.use((_, res, _2) => {
   res.status(404).json({ error: 'NOT FOUND' });

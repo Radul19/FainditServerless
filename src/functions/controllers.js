@@ -1,3 +1,4 @@
+// @ts-chec4
 import { User, FM_Item, denunciate, userIdSchema } from "../db/Schemas";
 import UserPool from "./UserPool.js";
 // import 'cross-fetch/polyfill';
@@ -18,6 +19,7 @@ import {
 import mongoose from "mongoose";
 import { url } from "inspector";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { check } from "prettier";
 mongoose.connect(process.env.DB);
 
 const ctrl = {};
@@ -524,16 +526,56 @@ ctrl.editArticle = async (req, res) => {
   }
 };
 
-// ctrl.name = (req, res) => {
-//   try {
+ctrl.findFmiItem = async (req, res) => {
+  try {
+    const { texto, place, price_min, price_max, categories } = req.body;
 
-//   } catch (error) {
-//     console.log(error)
-//     res.status(500).json({
-//       msg: 'Error inesperado'
-//     })
-//   }
-// }
+    console.log("Precio Minimo" + price_min,"Precio Maximo" + price_max,"Texto que quiere buscar"+ texto,"Lugar:"+ place);
+    
+    const priceMinFilter = price_min || 0;
+    const priceMaxFilter = price_max || 9999999;
+    console.log(place, "place")
+    console.log(priceMinFilter , "priceMinFilter")
+    console.log(priceMaxFilter, "priceMaxFilter")
+    console.log(categories, "categories")
+
+  //Cuando el Usuario  pone solo texto sin ningun filtro
+    if(priceMaxFilter == 9999999 && priceMinFilter == 0 && place == undefined && categories == undefined ) {
+    console.log("EL Usuario No puso ningul filtro")
+
+    
+    const arr = await FM_Item.find({ fileName: new RegExp( texto,'i')  });
+    res.json(arr);
+      
+    }else if(priceMaxFilter !== undefined && place == undefined && categories == undefined   ) {
+      console.log("El usuario puso filtro de Maximo precio")
+      const arr = await FM_Item.find({ price: { $gte: priceMinFilter , $lte: priceMaxFilter  }, fileName: new RegExp( texto,'i')});
+      res.json(arr);
+    } else if(priceMaxFilter !== undefined && place !== undefined && categories == undefined ) {
+      console.log("puso un lugar")
+      const arr = await FM_Item.find({ price: { $gte: priceMinFilter , $lte: priceMaxFilter  }, fileName: new RegExp( texto,'i'), place: place  });
+      res.json(arr);
+    }else if(priceMaxFilter !== undefined && place !== undefined && categories == undefined){
+      console.log("camino final")
+      const arr = await FM_Item.find({ price: { $gte: priceMinFilter , $lte: priceMaxFilter  }, fileName: new RegExp( texto,'i'), place: place, });
+      res.json(arr);
+    }else if(priceMaxFilter !== undefined && place == undefined && categories !== undefined){
+      console.log("con solo categoria")
+      const arr = await FM_Item.find({ price: { $gte: priceMinFilter , $lte: priceMaxFilter  }, fileName: new RegExp( texto,'i'), categories : {$in: categories} });
+      res.json(arr);
+    }else{
+      console.log("con solo place y categoria")
+      const arr = await FM_Item.find({ price: { $gte: priceMinFilter , $lte: priceMaxFilter  }, fileName: new RegExp( texto,'i'),place: place, categories : {$in: categories} });
+      res.json(arr);
+    }
+    
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
 
 export default ctrl;
 
