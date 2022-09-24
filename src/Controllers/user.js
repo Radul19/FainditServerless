@@ -384,20 +384,45 @@ userFunctions.editUserData = async (req, res) => {
   try {
 
     const { name, phone, middlename, address, id } = req.body
-    
-    const user = await User.updateOne({ id:id }, { $set: { name,phone,middlename,address } })
-    console.log(user.matchedCount > 0 )
-    if(user.matchedCount > 0 ){
+
+    const user = await User.updateOne({ id: id }, { $set: { name, phone, middlename, address } })
+    console.log(user.matchedCount > 0)
+    if (user.matchedCount > 0) {
       res.json({
         msg: 'Datos actualizados con exito'
       })
-    }else{
+    } else {
       res.status(404).json({
         msg: 'Usuario no econtrado, los datos no se han actualizado'
       })
     }
 
 
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+userFunctions.verifyUser = async (req, res) => {
+  try {
+
+    const { email } = req.params
+
+    const result = await User.updateOne({ email: email }, { $set: { verified: true } })
+
+    if (result) {
+      res.send({
+        msg: 'Usuario verificado'
+      })
+    } else {
+      res.status(409).json({
+        msg: 'Error al verificar al usuario'
+      })
+
+    }
 
   } catch (error) {
     console.log(error)

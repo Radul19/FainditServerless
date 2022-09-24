@@ -1,5 +1,5 @@
-import { FM_Item, denunciate } from '../db/Fm_Schemas';
-import UserPool from './UserPool.js'
+import { FM_Item, denunciate } from '../Models/FM_Schemas';
+import UserPool from '../Helpers/UserPool'
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 import getSignedURL from '../Helpers/getSignedURL';
 import { v4 as uuidv4 } from 'uuid';
@@ -156,7 +156,194 @@ fmFunctions.addFavorites = async (req, res) => {
   }
 };
 
+//Get all my articles
+fmFunctions.getAllArticles = async (req, res) => {
+  try {
+    const id = req.params.ownerId;
+    const myArticles = await FM_Item.find({ ownerId: id }).select({
+      description: 1,
+      fileName: 1,
+      price: 1,
+      base64: 1,
+      viewed: 1,
+      interactions: 1,
+    });
+    res.json(myArticles);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
 
+//Edit an article
+fmFunctions.editArticle = async (req, res) => {
+  try {
+    const {
+      fileName,
+      ownerId,
+      description,
+      price,
+      base64,
+      item_id,
+      categories,
+    } = req.body;
+
+    const myArticles = await FM_Item.findById(item_id).exec();
+    if (myArticles.ownerId === ownerId) {
+      const resultUpdate = await FM_Item.findByIdAndUpdate(
+        { _id: item_id },
+        {
+          $set: {
+            fileName: fileName,
+            price: price,
+            description: description,
+            base64: base64,
+            categories: categories,
+          },
+        }
+      );
+
+      console.log(resultUpdate.nModified);
+      res.json({ mgs: "Articulo editado con exito." });
+    } else {
+      res.json({ mgs: "No tienes permisos para editar este artículo." });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+//FM Markes search bar
+fmFunctions.findFmiItem = async (req, res) => {
+  try {
+    const { texto, place, price_min, price_max, categories } = req.body;
+    const priceMinFilter = price_min || 0;
+    const priceMaxFilter = price_max || 9999999;
+
+    //The user did not put any filter
+    if (
+      priceMaxFilter == 9999999 &&
+      priceMinFilter == 0 &&
+      place == undefined &&
+      categories == undefined
+    ) {
+      const arr = await FM_Item.find({ fileName: new RegExp(texto, "i") });
+      res.json(arr);
+    } else if (
+      priceMaxFilter !== undefined &&
+      place == undefined &&
+      categories == undefined
+    ) {
+      //The user put only filter of maximum price or minimum price
+      const arr = await FM_Item.find({
+        price: { $gte: priceMinFilter, $lte: priceMaxFilter },
+        fileName: new RegExp(texto, "i"),
+      });
+      res.json(arr);
+    } else if (
+      priceMaxFilter !== undefined &&
+      place !== undefined &&
+      categories == undefined
+    ) {
+      //User put only filter put a place (includes max and min by default)
+
+      const arr = await FM_Item.find({
+        price: { $gte: priceMinFilter, $lte: priceMaxFilter },
+        fileName: new RegExp(texto, "i"),
+        place: place,
+      });
+      res.json(arr);
+    } else if (
+      priceMaxFilter !== undefined &&
+      place !== undefined &&
+      categories == undefined
+    ) {
+      //the user only put place (includes max and min by default)
+      const arr = await FM_Item.find({
+        price: { $gte: priceMinFilter, $lte: priceMaxFilter },
+        fileName: new RegExp(texto, "i"),
+        place: place,
+      });
+      res.json(arr);
+    } else if (
+      priceMaxFilter !== undefined &&
+      place == undefined &&
+      categories !== undefined
+    ) {
+      //The user only put categories (includes max and min by default)
+      const arr = await FM_Item.find({
+        price: { $gte: priceMinFilter, $lte: priceMaxFilter },
+        fileName: new RegExp(texto, "i"),
+        categories: { $in: categories },
+      });
+      res.json(arr);
+    } else {
+      //the user put both category and place (includes max and min by default)
+      const arr = await FM_Item.find({
+        price: { $gte: priceMinFilter, $lte: priceMaxFilter },
+        fileName: new RegExp(texto, "i"),
+        place: place,
+        categories: { $in: categories },
+      });
+      res.json(arr);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+
+fmFunctions.getAllFmItems = async (req, res) => {
+  try {
+
+    const result = await FM_Item.find()
+
+    if (result) {
+      res.send({
+        result
+      })
+    } else {
+      res.status(404).json({
+        msg: 'No se encontraron resultados'
+      })
+    }
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+fmFunctions.getAllFmFavItems = async (req, res) => {
+  const { userId } = req.params
+  try {
+
+    const result = await FM_Item.find({ favorites: userId })
+
+    if (result) {
+      res.send({
+        result
+      })
+    } else {
+      res.status(404).json({
+        msg: 'No se encontraron resultados'
+      })
+    }
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
 
 
 
