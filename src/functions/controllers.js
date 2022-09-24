@@ -525,50 +525,80 @@ ctrl.editArticle = async (req, res) => {
     });
   }
 };
-
+//FM Markes search bar
 ctrl.findFmiItem = async (req, res) => {
   try {
     const { texto, place, price_min, price_max, categories } = req.body;
-
-    console.log("Precio Minimo" + price_min,"Precio Maximo" + price_max,"Texto que quiere buscar"+ texto,"Lugar:"+ place);
-    
     const priceMinFilter = price_min || 0;
     const priceMaxFilter = price_max || 9999999;
-    console.log(place, "place")
-    console.log(priceMinFilter , "priceMinFilter")
-    console.log(priceMaxFilter, "priceMaxFilter")
-    console.log(categories, "categories")
 
-  //Cuando el Usuario  pone solo texto sin ningun filtro
-    if(priceMaxFilter == 9999999 && priceMinFilter == 0 && place == undefined && categories == undefined ) {
-    console.log("EL Usuario No puso ningul filtro")
+    //The user did not put any filter
+    if (
+      priceMaxFilter == 9999999 &&
+      priceMinFilter == 0 &&
+      place == undefined &&
+      categories == undefined
+    ) {
+      const arr = await FM_Item.find({ fileName: new RegExp(texto, "i") });
+      res.json(arr);
+    } else if (
+      priceMaxFilter !== undefined &&
+      place == undefined &&
+      categories == undefined
+    ) {
+      //The user put only filter of maximum price or minimum price
+      const arr = await FM_Item.find({
+        price: { $gte: priceMinFilter, $lte: priceMaxFilter },
+        fileName: new RegExp(texto, "i"),
+      });
+      res.json(arr);
+    } else if (
+      priceMaxFilter !== undefined &&
+      place !== undefined &&
+      categories == undefined
+    ) {
+      //User put only filter put a place (includes max and min by default)
 
-    
-    const arr = await FM_Item.find({ fileName: new RegExp( texto,'i')  });
-    res.json(arr);
-      
-    }else if(priceMaxFilter !== undefined && place == undefined && categories == undefined   ) {
-      console.log("El usuario puso filtro de Maximo precio")
-      const arr = await FM_Item.find({ price: { $gte: priceMinFilter , $lte: priceMaxFilter  }, fileName: new RegExp( texto,'i')});
+      const arr = await FM_Item.find({
+        price: { $gte: priceMinFilter, $lte: priceMaxFilter },
+        fileName: new RegExp(texto, "i"),
+        place: place,
+      });
       res.json(arr);
-    } else if(priceMaxFilter !== undefined && place !== undefined && categories == undefined ) {
-      console.log("puso un lugar")
-      const arr = await FM_Item.find({ price: { $gte: priceMinFilter , $lte: priceMaxFilter  }, fileName: new RegExp( texto,'i'), place: place  });
+    } else if (
+      priceMaxFilter !== undefined &&
+      place !== undefined &&
+      categories == undefined
+    ) {
+      //the user only put place (includes max and min by default)
+      const arr = await FM_Item.find({
+        price: { $gte: priceMinFilter, $lte: priceMaxFilter },
+        fileName: new RegExp(texto, "i"),
+        place: place,
+      });
       res.json(arr);
-    }else if(priceMaxFilter !== undefined && place !== undefined && categories == undefined){
-      console.log("camino final")
-      const arr = await FM_Item.find({ price: { $gte: priceMinFilter , $lte: priceMaxFilter  }, fileName: new RegExp( texto,'i'), place: place, });
+    } else if (
+      priceMaxFilter !== undefined &&
+      place == undefined &&
+      categories !== undefined
+    ) {
+      //The user only put categories (includes max and min by default)
+      const arr = await FM_Item.find({
+        price: { $gte: priceMinFilter, $lte: priceMaxFilter },
+        fileName: new RegExp(texto, "i"),
+        categories: { $in: categories },
+      });
       res.json(arr);
-    }else if(priceMaxFilter !== undefined && place == undefined && categories !== undefined){
-      console.log("con solo categoria")
-      const arr = await FM_Item.find({ price: { $gte: priceMinFilter , $lte: priceMaxFilter  }, fileName: new RegExp( texto,'i'), categories : {$in: categories} });
-      res.json(arr);
-    }else{
-      console.log("con solo place y categoria")
-      const arr = await FM_Item.find({ price: { $gte: priceMinFilter , $lte: priceMaxFilter  }, fileName: new RegExp( texto,'i'),place: place, categories : {$in: categories} });
+    } else {
+      //the user put both category and place (includes max and min by default)
+      const arr = await FM_Item.find({
+        price: { $gte: priceMinFilter, $lte: priceMaxFilter },
+        fileName: new RegExp(texto, "i"),
+        place: place,
+        categories: { $in: categories },
+      });
       res.json(arr);
     }
-    
   } catch (error) {
     console.log(error);
     res.status(500).json({
