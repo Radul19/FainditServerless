@@ -4,6 +4,7 @@ import helmet from "helmet";
 
 // import uploadFile from './functions/uploadFile';
 import userFunctions from "./Controllers/user";
+import executiveFunctions from "./Controllers/executive_mode";
 import fmFunctions from "./Controllers/faindit_market";
 import "./Models/db";
 // import cors from 'cors'
@@ -26,9 +27,12 @@ const {
   forgotPasswordCode,
   verifyIDRequest,
   editUserData,
+  deleteUser,
+  verifyUser,
 } = userFunctions;
 
-const { denunciate , addFavorites }  = fmFunctions
+const { denunciate, addFavorites } = fmFunctions;
+const { createMarket, getAllMarkets, getMarket } = executiveFunctions;
 
 app.get("/", apitest);
 
@@ -45,12 +49,19 @@ app.post("/forgotPasswordSend", forgotPasswordSend);
 app.post("/forgotPasswordCode", forgotPasswordCode);
 app.post("/verifyIDRequest", verifyIDRequest);
 app.post("/editUserData", editUserData);
+app.post("/deleteUser", deleteUser);
+app.post("/verifyUser", verifyUser);
 
 //// FAINDIT MARKET ROUTES
 //report an item on the marketplaces
-app.post('/denunciate',denunciate);
+app.post("/denunciate", denunciate);
 //router for add favorites
-app.post('/addFavorites',addFavorites);
+app.post("/addFavorites", addFavorites);
+
+//// FAINDIT MARKET ROUTES
+app.post("/createMarket", createMarket);
+app.get("/getAllMarkets", getAllMarkets);
+app.get("/getMarket/:id", getMarket);
 
 app.use((_, res, _2) => {
   res.status(404).json({ error: "NOT FOUND" });

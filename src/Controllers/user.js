@@ -1,14 +1,21 @@
-import { User, FM_Item } from '../Models/Users_Schemas';
+import { User } from '../Models/Users_Schemas';
 import { VerifyUserReq } from '../Models/C_Side_Schemas';
 import UserPool from '../Helpers/UserPool'
 // import 'cross-fetch/polyfill';
-import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
+import { CognitoUser, AuthenticationDetails, } from 'amazon-cognito-identity-js';
 import getSignedURL from '../Helpers/getSignedURL';
 import { v4 as uuidv4 } from 'uuid';
 import deleteImage from '../Helpers/deleteImage';
 import uploadFile from '../Helpers/uploadFile';
 import simpleUploadFile from '../Helpers/simpleUploadFile';
+import {
+  CognitoIdentityProviderClient,
+  AdminDeleteUserCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
+
 const userFunctions = {};
+
+
 
 userFunctions.apitest = async (_, res) => {
   res.json({
@@ -17,10 +24,8 @@ userFunctions.apitest = async (_, res) => {
 };
 
 userFunctions.registerUser = async (req, res) => {
-  // console.log(req.body)
   try {
-    const { address, birth, card_id, confirmPassword, email, genre, middlename, name, num, password } = req.body;
-
+    const {email, password } = req.body;
 
     UserPool.signUp(email, password, [], null, async (err, data) => {
       if (err) {
@@ -29,32 +34,12 @@ userFunctions.registerUser = async (req, res) => {
             msg: "El correo con el que se intenta registrar ya esta en uso",
           })
         } else {
+          console.log(err)
           res.status(409).json({
             msg: "Error inesperado, intente nuevamente en unos minutos",
           })
         }
       } else {
-
-        const newUser = new User({
-          name,
-          middlename,
-          email,
-          birth,
-          phone: '+58' + num,
-          id: data.userSub,
-          place: "someplace",
-          address,
-          country: "",
-          profile_pic: "profilepicture",
-          interest: [],
-          market: false,
-          viewer: false,
-          favorite: {},
-          membership: false,
-          notifications: [],
-        })
-        await newUser.save()
-
         res.status(200).json({
           msg: "Cuenta creada con exito",
         })
@@ -73,12 +58,21 @@ userFunctions.registerUser = async (req, res) => {
 userFunctions.searchEmail = async (req, res) => {
   try {
     const { email } = req.params
-    UserPool.signUp(email, '//**--', [], null, (err, data) => {
+    UserPool.signUp(email, '123123As', [], null, async (err, data) => {
       if (err) {
         if (err.name === "UsernameExistsException") {
-          res.status(400).json({
-            msg: 'El correo ya está en uso'
-          })
+          const result = await User.findOne({email})
+          if(result === null){
+            await deleteUserFromCognito(email)
+            res.status(200).json({
+              msg: 'El correo no está en uso'
+            })
+          }else{
+            res.status(400).json({
+              msg: 'El correo ya está en uso'
+            })
+          }
+          
 
         } else {
           // console.log(err)
@@ -92,6 +86,9 @@ userFunctions.searchEmail = async (req, res) => {
         })
       }
     })
+    // res.send({
+    //   ok:true
+    // })
 
 
     /** ERROR */
@@ -104,7 +101,8 @@ userFunctions.searchEmail = async (req, res) => {
 }
 userFunctions.verifyEmailCode = async (req, res) => {
   try {
-    const { code, email } = req.body
+    // const { code, email } = req.body
+    const { code,address, birth, card_id, email, genre, middlename, name, num } = req.body;
     let userData = {
       Username: email,
       Pool: UserPool,
@@ -112,10 +110,7 @@ userFunctions.verifyEmailCode = async (req, res) => {
 
 
     let cognitoUser = new CognitoUser(userData);
-    // console.log(cognitoUser)
-
-    // console.log(code,email)
-
+    
     cognitoUser.confirmRegistration(code, true, async (err, result) => {
       if (err) {
         console.log(err)
@@ -124,11 +119,30 @@ userFunctions.verifyEmailCode = async (req, res) => {
         })
         return;
       }
-      // console.log('call result: ' + result);
-      const user = await User.findOne({ email: email })
+      const newUser = new User({
+        name,
+        middlename,
+        email,
+        birth,
+        phone: '+58' + num,
+        place: "someplace",
+        address,
+        country: "",
+        profile_pic: "profilepicture",
+        interest: [],
+        market: false,
+        viewer: false,
+        favorite: {},
+        membership: false,
+        notifications: [],
+        verified: false,
+      })
+      await newUser.save()
+      const {createdAt,updatedAt,__v, ...userData  } = newUser._doc
+      // const user = await User.findOne({ email: email })
       res.status(200).json({
         msg: 'Cuenta verificada',
-        userData: user
+        userData: userData
       })
     });
 
@@ -188,8 +202,14 @@ userFunctions.login = async (req, res) => {
             msg: 'Ingrese el codigo de verificacion enviado a su correo antes de continuar',
             // userData: user
           })
-        } else {
-          // console.log(err.code)
+        } else if (err.code === 'NotAuthorizedException') {
+          console.log(err.code)
+          res.status(401).json({
+            msg: 'Su cuenta no ha sido verificada, vuelva a registrarse ingresando el codigo de verificación',
+          })
+        }
+        else {
+          console.log(err.code)
           res.status(403).json({
             msg: 'Datos incorrectos',
           })
@@ -260,9 +280,7 @@ userFunctions.updateProfilePicture = async (req, res) => {
     const url = await uploadFile(base64, img_id);
     const deleteImg = await deleteImage(old_img)
 
-    const findUser = await User.findOne({ email: email })
-    findUser.profile_pic = img_id
-    await findUser.save()
+    const findUser = await User.updateOne({ email: email },{$set:{profile_pic: img_id}})
 
     res.json({
       url, img_id, deleteImg,
@@ -384,14 +402,14 @@ userFunctions.editUserData = async (req, res) => {
   try {
 
     const { name, phone, middlename, address, id } = req.body
-    
-    const user = await User.updateOne({ id:id }, { $set: { name,phone,middlename,address } })
-    console.log(user.matchedCount > 0 )
-    if(user.matchedCount > 0 ){
+
+    const user = await User.updateOne({ id: id }, { $set: { name, phone, middlename, address } })
+    console.log(user.matchedCount > 0)
+    if (user.matchedCount > 0) {
       res.json({
         msg: 'Datos actualizados con exito'
       })
-    }else{
+    } else {
       res.status(404).json({
         msg: 'Usuario no econtrado, los datos no se han actualizado'
       })
@@ -406,6 +424,68 @@ userFunctions.editUserData = async (req, res) => {
     })
   }
 }
+userFunctions.deleteUser = async (req, res) => {
+  try {
+
+    const { email } = req.body
+    const client = new CognitoIdentityProviderClient({ region: 'us-east-1' });
+
+    var adminDeleteUserCommandInput = {
+      UserPoolId: process.env.USER_POOL,
+      Username: email
+    };
+
+    const adminDeleteUserCommandResults = await client.send(new AdminDeleteUserCommand(adminDeleteUserCommandInput));
+
+    const resultMongo = await User.deleteOne({email:email})
+
+    res.send({
+      ok:true,
+      result:adminDeleteUserCommandResults,
+      resultMongo
+    })
+
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+const deleteUserFromCognito = async (email)=>{
+  const client = new CognitoIdentityProviderClient({ region: 'us-east-1' });
+
+  var adminDeleteUserCommandInput = {
+    UserPoolId: process.env.USER_POOL,
+    Username: email
+  };
+
+  const adminDeleteUserCommandResults = await client.send(new AdminDeleteUserCommand(adminDeleteUserCommandInput));
+}
+
+userFunctions.verifyUser = async (req, res) => {
+  try {
+
+    const {email} = req.body
+
+    const user = await User.updateOne({ email }, { $set: { verified:true } })
+
+    res.status(200).json({
+      ok:true,
+      msg:'Usuario verificado con exito'
+    })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+// Skeleton
 // userFunctions.name = (req, res) => {
 //   try {
 

@@ -17,6 +17,6 @@ export default async (base64: string, fileName: string): Promise<Boolean> => {
     return true
   } catch (err) {
     // throw new Error(err.message);
-    return err
+    return false
   }
 };
