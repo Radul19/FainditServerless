@@ -26,6 +26,8 @@ const {
   forgotPasswordCode,
   verifyIDRequest,
   editUserData,
+  deleteUser,
+  verifyUser
 } = userFunctions;
 
 const { denunciate , addFavorites }  = fmFunctions
@@ -45,6 +47,8 @@ app.post("/forgotPasswordSend", forgotPasswordSend);
 app.post("/forgotPasswordCode", forgotPasswordCode);
 app.post("/verifyIDRequest", verifyIDRequest);
 app.post("/editUserData", editUserData);
+app.post("/deleteUser", deleteUser);
+app.post("/verifyUser", verifyUser);
 
 //// FAINDIT MARKET ROUTES
 //report an item on the marketplaces

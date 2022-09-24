@@ -6,7 +6,7 @@ const client = new S3Client({ region: 'us-east-1' });
 export default async (fileName: string): Promise<string> => {
   const command = new GetObjectCommand({
     Bucket: process.env.BUCKET_NAME!,
-    Key: `prueba/${fileName}.png`,
+    Key: `images/${fileName}.png`,
     ResponseContentDisposition: 'inline',
     ResponseContentType: 'image/png',
   });

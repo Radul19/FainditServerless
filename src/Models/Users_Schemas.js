@@ -5,7 +5,6 @@ const UserSchema = new Schema({
   email: { type: String, required: true },
   birth: { type: String, required: true },
   phone: { type: String, required: true },
-  id: { type: String, required: true },
   place: { type: String, required: true },
   middlename: { type: String, required: true },
   address: { type: String, required: false },
@@ -17,6 +16,7 @@ const UserSchema = new Schema({
   favorite: { type: Object, required: false },
   membership: { type: Boolean, required: true },
   notifications: { type: Array, required: false },
+  verified: { type: Boolean, required: true },
 }, {
   timestamps: true
 })
