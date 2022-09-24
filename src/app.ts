@@ -26,10 +26,9 @@ const {
   forgotPasswordCode,
   verifyIDRequest,
   editUserData,
-  verifyUser
 } = userFunctions;
 
-const { denunciate , addFavorites,getAllArticles,editArticle,findFmiItem,getAllFmItems,getAllFmFavItems }  = fmFunctions
+const { denunciate , addFavorites,getAllArticles,editArticle,findFmiItem }  = fmFunctions
 
 app.get("/", apitest);
 
@@ -46,7 +45,6 @@ app.post("/forgotPasswordSend", forgotPasswordSend);
 app.post("/forgotPasswordCode", forgotPasswordCode);
 app.post("/verifyIDRequest", verifyIDRequest);
 app.post("/editUserData", editUserData);
-app.get("/verifyUser/:email", verifyUser);
 
 //// FAINDIT MARKET ROUTES
 //report an item on the marketplaces
@@ -59,10 +57,6 @@ app.get('/:ownerId/id',getAllArticles);
 app.post('/editarticle',editArticle);
 //item finder
 app.post('/findFmiItem',findFmiItem);
-
-app.get('/getAllFmItems',getAllFmItems);
-app.get('/getAllFmFavItems/:userId',getAllFmFavItems);
-
 
 app.use((_, res, _2) => {
   res.status(404).json({ error: "NOT FOUND" });
