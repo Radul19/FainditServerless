@@ -19,6 +19,11 @@ const FM_ItemSchema = new Schema({
   timestamps: true
 })
 
+/*
+Cambiar filename por title
+cambiar base64 por filename (tendra el nombre de la imagen para asi buscarla en el bucket)
+*/
+
 const denunciateSchema = new Schema({
   item_id: { type: String, required: true },
   type: { type: Number, required: true },

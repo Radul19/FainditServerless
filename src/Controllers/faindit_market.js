@@ -299,6 +299,7 @@ fmFunctions.findFmiItem = async (req, res) => {
   }
 };
 
+//// Funciones temporales para
 fmFunctions.getAllFmItems = async (req, res) => {
   try {
 
