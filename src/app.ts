@@ -1,9 +1,9 @@
 import express, { json } from "express";
 import helmet from "helmet";
-import "./Models/db";
 import userRoutes from './Routes/user.routes'
 import fmRoutes from './Routes/fm.routes'
 import executiveRoutes from './Routes/executive.routes'
+// import "./Models/db";
 
 //import { upload } from'./model/upload'
 // import uploadFile from './functions/uploadFile';
