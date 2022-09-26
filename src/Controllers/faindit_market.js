@@ -299,7 +299,7 @@ fmFunctions.findFmiItem = async (req, res) => {
   }
 };
 
-//// Funciones temporales para
+//// Funciones temporales para el front
 fmFunctions.getAllFmItems = async (req, res) => {
   try {
 
