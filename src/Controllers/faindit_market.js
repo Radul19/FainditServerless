@@ -15,7 +15,7 @@ mongoose.connect(process.env.DB)
 const fmFunctions = {};
 
 //Upload Image to S3
-fmFunctions.uploadFile = async (base64, key) => {
+fmFunctions.uploadFile = async (base64, key,ownerId) => {
   try {
     const s3Client = new S3Client({
       region: process.env.REGION,
@@ -31,7 +31,7 @@ fmFunctions.uploadFile = async (base64, key) => {
     const bucketParams = {
       Body: buffer,
       Bucket: process.env.BUCKET_NAME,
-      Key: `prueba/${key}.png`,
+      Key: `imagesFm/${ownerId}/${key}.png`,
       ContentType: "image/png",
       acl: "public-read",
     };
@@ -46,7 +46,7 @@ fmFunctions.uploadFile = async (base64, key) => {
   }
 };
 //Get Url the in Objet
-fmFunctions.getUrlFile = async (key) => {
+fmFunctions.getUrlFile = async (key,ownerId) => {
   try {
     const client = new S3Client({
       region: process.env.REGION,
@@ -57,7 +57,7 @@ fmFunctions.getUrlFile = async (key) => {
     });
     const command = new GetObjectCommand({
       Bucket: process.env.BUCKET_NAME,
-      Key: `prueba/${key}.png`,
+      Key: `imagesFm/${ownerId}/${key}.png`,
       ResponseContentDisposition: "inline",
       ResponseContentType: "image/png",
       acl: "public-read"
@@ -356,8 +356,8 @@ fmFunctions.createAnArticle = async (req, res) => {
   const allImages = []
   for (let i = 0; i < fileName.length; i++) {
     const key = i
-    const updateFile = await fmFunctions.uploadFile(fileName[i], key);
-    const getUrlFile = await fmFunctions.getUrlFile(key);
+    const updateFile = await fmFunctions.uploadFile(fileName[i], key, ownerId);
+    const getUrlFile = await fmFunctions.getUrlFile(key, ownerId);
     allImages.push(getUrlFile);
   }
 
