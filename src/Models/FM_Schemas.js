@@ -1,7 +1,7 @@
 const { Schema, model, ObjectId } = require('mongoose')
 
 const FM_ItemSchema = new Schema({
-  fileName: { type: String, required: true  },
+  title: { type: String, required: true  },// filename
   description: { type: String, required: true  },
   ownerId: { type: String, required: true  },
   price: { type: Number, required: true  },
@@ -9,7 +9,7 @@ const FM_ItemSchema = new Schema({
   interactions: { type: String, default:0  },
   place: { type: String, required: true   },
   favorites:[],
-  base64: [],
+  fileName: [],// base64
   categories:[]
 }, {
   timestamps: true

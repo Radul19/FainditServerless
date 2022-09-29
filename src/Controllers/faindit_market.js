@@ -15,7 +15,7 @@ mongoose.connect(process.env.DB)
 const fmFunctions = {};
 
 //Upload Image to S3
-fmFunctions.uploadFile = async (base64, fileName) => {
+fmFunctions.uploadFile = async (base64, key) => {
   try {
     const s3Client = new S3Client({
       region: process.env.REGION,
@@ -31,7 +31,7 @@ fmFunctions.uploadFile = async (base64, fileName) => {
     const bucketParams = {
       Body: buffer,
       Bucket: process.env.BUCKET_NAME,
-      Key: `prueba/${fileName}.png`,
+      Key: `prueba/${key}.png`,
       ContentType: "image/png",
       acl: "public-read",
     };
@@ -46,7 +46,7 @@ fmFunctions.uploadFile = async (base64, fileName) => {
   }
 };
 //Get Url the in Objet
-fmFunctions.getUrlFile = async (fileName) => {
+fmFunctions.getUrlFile = async (key) => {
   try {
     const client = new S3Client({
       region: process.env.REGION,
@@ -57,7 +57,7 @@ fmFunctions.getUrlFile = async (fileName) => {
     });
     const command = new GetObjectCommand({
       Bucket: process.env.BUCKET_NAME,
-      Key: `prueba/${fileName}.png`,
+      Key: `prueba/${key}.png`,
       ResponseContentDisposition: "inline",
       ResponseContentType: "image/png",
       acl: "public-read"
@@ -165,9 +165,9 @@ fmFunctions.getAllArticles = async (req, res) => {
     const id = req.params.ownerId;
     const myArticles = await FM_Item.find({ ownerId: id }).select({
       description: 1,
-      fileName: 1,
+      title: 1,
       price: 1,
-      base64: 1,
+      fileName: 1,
       viewed: 1,
       interactions: 1,
     });
@@ -184,11 +184,11 @@ fmFunctions.getAllArticles = async (req, res) => {
 fmFunctions.editArticle = async (req, res) => {
   try {
     const {
-      fileName,
+      title,
       ownerId,
       description,
       price,
-      base64,
+      fileName,
       item_id,
       categories,
     } = req.body;
@@ -199,16 +199,16 @@ fmFunctions.editArticle = async (req, res) => {
         { _id: item_id },
         {
           $set: {
-            fileName: fileName,
+            title: title,
             price: price,
             description: description,
-            base64: base64,
+            fileName: fileName,
             categories: categories,
           },
         }
       );
 
-      console.log(resultUpdate.nModified);
+      //console.log(resultUpdate.nModified);
       res.json({ mgs: "Articulo editado con exito." });
     } else {
       res.json({ mgs: "No tienes permisos para editar este artículo." });
@@ -223,7 +223,7 @@ fmFunctions.editArticle = async (req, res) => {
 //FM Markes search bar
 fmFunctions.findFmiItem = async (req, res) => {
   try {
-    const { texto, place, price_min, price_max, categories } = req.body;
+    const { title, place, price_min, price_max, categories } = req.body;
     const priceMinFilter = price_min || 0;
     const priceMaxFilter = price_max || 9999999;
 
@@ -234,7 +234,7 @@ fmFunctions.findFmiItem = async (req, res) => {
       place == undefined &&
       categories == undefined
     ) {
-      const arr = await FM_Item.find({ fileName: new RegExp(texto, "i") });
+      const arr = await FM_Item.find({ title: new RegExp(title, "i") });
       res.json(arr);
     } else if (
       priceMaxFilter !== undefined &&
@@ -244,7 +244,7 @@ fmFunctions.findFmiItem = async (req, res) => {
       //The user put only filter of maximum price or minimum price
       const arr = await FM_Item.find({
         price: { $gte: priceMinFilter, $lte: priceMaxFilter },
-        fileName: new RegExp(texto, "i"),
+        title: new RegExp(title, "i"),
       });
       res.json(arr);
     } else if (
@@ -256,7 +256,7 @@ fmFunctions.findFmiItem = async (req, res) => {
 
       const arr = await FM_Item.find({
         price: { $gte: priceMinFilter, $lte: priceMaxFilter },
-        fileName: new RegExp(texto, "i"),
+        title: new RegExp(title, "i"),
         place: place,
       });
       res.json(arr);
@@ -268,7 +268,7 @@ fmFunctions.findFmiItem = async (req, res) => {
       //the user only put place (includes max and min by default)
       const arr = await FM_Item.find({
         price: { $gte: priceMinFilter, $lte: priceMaxFilter },
-        fileName: new RegExp(texto, "i"),
+        title: new RegExp(title, "i"),
         place: place,
       });
       res.json(arr);
@@ -280,7 +280,7 @@ fmFunctions.findFmiItem = async (req, res) => {
       //The user only put categories (includes max and min by default)
       const arr = await FM_Item.find({
         price: { $gte: priceMinFilter, $lte: priceMaxFilter },
-        fileName: new RegExp(texto, "i"),
+        title: new RegExp(title, "i"),
         categories: { $in: categories },
       });
       res.json(arr);
@@ -288,7 +288,7 @@ fmFunctions.findFmiItem = async (req, res) => {
       //the user put both category and place (includes max and min by default)
       const arr = await FM_Item.find({
         price: { $gte: priceMinFilter, $lte: priceMaxFilter },
-        fileName: new RegExp(texto, "i"),
+        title: new RegExp(title, "i"),
         place: place,
         categories: { $in: categories },
       });
@@ -352,23 +352,23 @@ fmFunctions.getAllFmFavItems = async (req, res) => {
 //create An Article
 fmFunctions.createAnArticle = async (req, res) => {
   try {
-    let { name, description, price, categories, base64, place, ownerId } = req.body;
+    let { title, description, price, categories, fileName, place, ownerId } = req.body;
   const allImages = []
-  for (let i = 0; i < base64.length; i++) {
-    const fileName = i
-    const updateFile = await fmFunctions.uploadFile(base64[i], fileName);
-    const getUrlFile = await fmFunctions.getUrlFile(fileName);
+  for (let i = 0; i < fileName.length; i++) {
+    const key = i
+    const updateFile = await fmFunctions.uploadFile(fileName[i], key);
+    const getUrlFile = await fmFunctions.getUrlFile(key);
     allImages.push(getUrlFile);
   }
 
 
   const fm_Item = new FM_Item({ 
-    fileName: name,
+    title: title,
     description: description,
     ownerId: ownerId,
     price: price,
     place: place,
-    base64: allImages,
+    fileName: allImages,
     categories:categories})
 
  const youArticle = await fm_Item.save()
