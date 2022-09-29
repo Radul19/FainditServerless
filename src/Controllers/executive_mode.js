@@ -1,7 +1,7 @@
-import simpleUploadFile from '@/Helpers/simpleUploadFile';
+import simpleUploadFile from '@/helpers/simpleUploadFile';
 import { Executive } from '../Models/Executive_Schemas';
 import { v4 as uuidv4 } from 'uuid';
-import uploadFile from '@/Helpers/uploadFile';
+import uploadFile from '@/helpers/uploadFile';
 
 const executiveFunctions = {};
 

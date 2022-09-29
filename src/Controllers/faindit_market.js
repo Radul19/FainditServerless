@@ -1,10 +1,10 @@
 import { FM_Item, denunciate } from '../Models/FM_Schemas';
-import UserPool from '../Helpers/UserPool'
+import UserPool from '../helpers/UserPool'
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
-import getSignedURL from '../Helpers/getSignedURL';
+import getSignedURL from '../helpers/getSignedURL';
 import { v4 as uuidv4 } from 'uuid';
-import deleteImage from '../Helpers/deleteImage';
-import uploadFile from '../Helpers/uploadFile';
+import deleteImage from '../helpers/deleteImage';
+import uploadFile from '../helpers/uploadFile';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
 import mongoose from 'mongoose'
 import { url } from 'inspector';
@@ -18,18 +18,19 @@ const fmFunctions = {};
 fmFunctions.uploadFile = async (base64, fileName) => {
   try {
     const s3Client = new S3Client({
-      region: 'us-east-1',
+      region: process.env.REGION,
       credentials: {
-        accessKeyId: 'AKIAVGAEGM4SMMPUU7PH',
-        secretAccessKey: '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',
-      }
+        accessKeyId: process.env.ACCESSKEYID,
+        secretAccessKey: process.env.SECRETACCESSKEY,
+      },
     });
+
 
     const buffer = Buffer.from(base64, "base64");
 
     const bucketParams = {
       Body: buffer,
-      Bucket: 'cultalaimagen',
+      Bucket: process.env.BUCKET_NAME,
       Key: `prueba/${fileName}.png`,
       ContentType: "image/png",
       acl: "public-read",
@@ -59,14 +60,16 @@ fmFunctions.getUrlFile = async (fileName) => {
       Key: `prueba/${fileName}.png`,
       ResponseContentDisposition: "inline",
       ResponseContentType: "image/png",
+      acl: "public-read"
     });
-    const urlImage = await getSignedUrl(client, command, { expiresIn: 3600 });
-    console.log(urlImage)
+    const urlImage = await getSignedUrl(client, command);//{ expiresIn: 3600 } <-- time the images
+    //console.log(urlImage)
     return urlImage;
   } catch (error) {
     console.log(error);
   }
 };
+
 //Save the image in the database
 fmFunctions.saveImage = async (req, res) => {
 
@@ -345,6 +348,40 @@ fmFunctions.getAllFmFavItems = async (req, res) => {
     })
   }
 }
+
+//create An Article
+fmFunctions.createAnArticle = async (req, res) => {
+  try {
+    let { name, description, price, categories, base64, place, ownerId } = req.body;
+  const allImages = []
+  for (let i = 0; i < base64.length; i++) {
+    const fileName = i
+    const updateFile = await fmFunctions.uploadFile(base64[i], fileName);
+    const getUrlFile = await fmFunctions.getUrlFile(fileName);
+    allImages.push(getUrlFile);
+  }
+
+
+  const fm_Item = new FM_Item({ 
+    fileName: name,
+    description: description,
+    ownerId: ownerId,
+    price: price,
+    place: place,
+    base64: allImages,
+    categories:categories})
+
+ const youArticle = await fm_Item.save()
+ 
+  res.json({
+    msg:"Articulo publicado con exito"
+  })
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+};
 
 
 
