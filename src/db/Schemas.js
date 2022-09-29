@@ -29,11 +29,7 @@ const FM_ItemSchema = new Schema({
   interactions: { type: String, default:0  },
   place: { type: String, required: true   },
   favorites:[],
-  base64: {
-    type: String, 
-    required: true,
-    default: 'https://kartox.com/cdnassets/categories/grid/K0502-1_l.jpg',
-  },
+  base64: [],
   categories:[]
 }, {
   timestamps: true
@@ -54,6 +50,10 @@ export const denunciate = model('denunciate', denunciateSchema)
 export const User = model('User', UserSchema)
 export const FM_Item = model('FM_Item', FM_ItemSchema)
 
-
+/* base64: {
+  type: String, 
+  required: true,
+  default: 'https://kartox.com/cdnassets/categories/grid/K0502-1_l.jpg',
+} */
 
 // module.exports = model('User', UserSchema)

@@ -321,10 +321,10 @@ ctrl.updateProfilePicture = async (req, res) => {
 ctrl.uploadFile = async (base64, fileName) => {
   try {
     const s3Client = new S3Client({
-      region: "us-east-1",
+      region: process.env.REGION,
       credentials: {
-        accessKeyId: "AKIAVGAEGM4SMMPUU7PH",
-        secretAccessKey: "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",
+        accessKeyId: process.env.ACCESS_KEY,
+        secretAccessKey: process.env.SECRET_KEY,
       },
     });
 
@@ -332,10 +332,10 @@ ctrl.uploadFile = async (base64, fileName) => {
 
     const bucketParams = {
       Body: buffer,
-      Bucket: "cultalaimagen",
+      Bucket: "cultprueba",
       Key: `prueba/${fileName}.png`,
       ContentType: "image/png",
-      acl: "public-read",
+      acl: "public-read"
     };
     await s3Client.send(new PutObjectCommand(bucketParams));
     console.log("Success Upload");
@@ -353,18 +353,20 @@ ctrl.getUrlFile = async (fileName) => {
     const client = new S3Client({
       region: process.env.REGION,
       credentials: {
-        accessKeyId: process.env.ACCESSKEYID,
-        secretAccessKey: process.env.SECRETACCESSKEY,
+        accessKeyId: process.env.ACCESS_KEY,
+        secretAccessKey: process.env.SECRET_KEY,
       },
     });
     const command = new GetObjectCommand({
-      Bucket: process.env.BUCKET_NAME,
+      Bucket: "cultprueba",
       Key: `prueba/${fileName}.png`,
       ResponseContentDisposition: "inline",
       ResponseContentType: "image/png",
+      acl: "public-read"
     });
-    const urlImage = await getSignedUrl(client, command, { expiresIn: 3600 });
-    console.log(urlImage);
+    const urlImage = await getSignedUrl(client, command);
+   // console.log(urlImage);
+   //{ expiresIn: 3600 }
     return urlImage;
   } catch (error) {
     console.log(error);
@@ -611,6 +613,39 @@ ctrl.findFmiItem = async (req, res) => {
     });
   }
 };
+
+//create An Article
+ctrl.createAnArticle = async (req, res) => {
+  try {
+    let { name, description, price, categories, base64, place, ownerId } = req.body;
+  const allImages = []
+  for (let i = 0; i < base64.length; i++) {
+    const fileName = i
+    const updateFile = await ctrl.uploadFile(base64[i], fileName);
+    const getUrlFile = await ctrl.getUrlFile(fileName);
+    allImages.push(getUrlFile);
+  }
+
+  const fm_Item = new FM_Item({ 
+    fileName: name,
+    description: description,
+    ownerId: ownerId,
+    price: price,
+    place: place,
+    base64: allImages,
+    categories:categories})
+
+ const youArticle = await fm_Item.save()
+  //console.log(allImages)
+  //console.log(ulrImages) 
+  res.json(youArticle)
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+};
+
 
 export default ctrl;
 
