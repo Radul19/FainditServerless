@@ -1,3 +1,4 @@
+//@ts-chec4
 import { FM_Item, denunciate } from '../Models/FM_Schemas';
 import UserPool from '../helpers/UserPool'
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
@@ -393,6 +394,18 @@ fmFunctions.getAllFmItems = async (req, res) => {
 
 
 
+ fmFunctions.getAllFavourite = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const myFavourites = await FM_Item.find({ favorites: id })
+   res.json(myFavourites)
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+}; 
+
 /* fmFunctions.name = async (req, res) => {
   try {
    
@@ -402,8 +415,6 @@ fmFunctions.getAllFmItems = async (req, res) => {
     });
   }
 }; */
-
-
 
 
 export default fmFunctions;
