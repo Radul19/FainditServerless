@@ -11,11 +11,10 @@ import { url } from 'inspector';
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 mongoose.connect(process.env.DB)
 
-
 const fmFunctions = {};
 
 //Upload Image to S3
-fmFunctions.uploadFile = async (base64, key,ownerId) => {
+fmFunctions.uploadFile = async (base64, key, ownerId, id) => {
   try {
     const s3Client = new S3Client({
       region: process.env.REGION,
@@ -27,18 +26,17 @@ fmFunctions.uploadFile = async (base64, key,ownerId) => {
 
 
     const buffer = Buffer.from(base64, "base64");
-
+ 
     const bucketParams = {
       Body: buffer,
       Bucket: process.env.BUCKET_NAME,
-      Key: `imagesFm/${ownerId}/${key}.png`,
+      Key: `imagesFm/${ownerId}/${id}/${key}.png`,
       ContentType: "image/png",
       acl: "public-read",
     };
-    await s3Client.send(new PutObjectCommand(bucketParams));
-    console.log("Success Upload");
-    //return data
-    // process data.
+   s3Client.send(new PutObjectCommand(bucketParams));
+   //console.log("Success");
+  
   } catch (err) {
     // error handling.
     console.log("Error", err.message);
@@ -46,7 +44,7 @@ fmFunctions.uploadFile = async (base64, key,ownerId) => {
   }
 };
 //Get Url the in Objet
-fmFunctions.getUrlFile = async (key,ownerId) => {
+fmFunctions.getUrlFile = async (key ,ownerId, id) => {
   try {
     const client = new S3Client({
       region: process.env.REGION,
@@ -55,12 +53,12 @@ fmFunctions.getUrlFile = async (key,ownerId) => {
         secretAccessKey: process.env.SECRETACCESSKEY,
       }
     });
+    
     const command = new GetObjectCommand({
       Bucket: process.env.BUCKET_NAME,
-      Key: `imagesFm/${ownerId}/${key}.png`,
+      Key: `imagesFm/${ownerId}/${id}/${key}.png`,
       ResponseContentDisposition: "inline",
       ResponseContentType: "image/png",
-      acl: "public-read"
     });
     const urlImage = await getSignedUrl(client, command);//{ expiresIn: 3600 } <-- time the images
     //console.log(urlImage)
@@ -109,7 +107,7 @@ fmFunctions.denunciate = async (req, res) => {
       description: req.body.description
     });
 
-    const denunciatesSaved = await denunciates.save()
+     await denunciates.save()
 
 
     res.status(200).json({
@@ -132,7 +130,7 @@ fmFunctions.addFavorites = async (req, res) => {
     let favourite = findUser.favorites;
 
     if (favourite == undefined) {
-      const resUpdate = await FM_Item.updateOne({ _id: itemId }, { $set: { favorites: userId } });
+       await FM_Item.updateOne({ _id: itemId }, { $set: { favorites: userId } });
       res.json({
         msg: "articulo guardado en favoritos",
       });
@@ -145,7 +143,7 @@ fmFunctions.addFavorites = async (req, res) => {
         });
       } else {
         favourite.splice(favourite.indexOf(userId), 1);
-        const removeFavorite = await FM_Item.updateOne({ _id: itemId }, { $set: { favorites: favourite } });
+         await FM_Item.updateOne({ _id: itemId }, { $set: { favorites: favourite } });
         res.json({
           msg: "Articulo removido de tu lista de favoritos",
         });
@@ -226,14 +224,6 @@ fmFunctions.findFmiItem = async (req, res) => {
     const { title, place, price_min, price_max, categories } = req.body;
     const priceMinFilter = price_min ?? 0;
     const priceMaxFilter = price_max ?? 9999999;
-
-    //console.log(title, place, priceMinFilter, priceMaxFilter, categories);
-    const bolea =
-      priceMaxFilter == 9999999 &&
-      priceMinFilter == 0 &&
-      place == null &&
-      categories == null;
-    //console.log(bolea);
 
     switch (true) {
       //The user did not put any filter
@@ -359,10 +349,11 @@ fmFunctions.createAnArticle = async (req, res) => {
   try {
     let { title, description, price, categories, fileName, place, ownerId } = req.body;
   const allImages = []
+  const id = uuidv4()
   for (let i = 0; i < fileName.length; i++) {
     const key = i
-    const updateFile = await fmFunctions.uploadFile(fileName[i], key, ownerId);
-    const getUrlFile = await fmFunctions.getUrlFile(key, ownerId);
+                       await fmFunctions.uploadFile(fileName[i], key, ownerId, id);
+    const getUrlFile = await fmFunctions.getUrlFile(key, ownerId, id);
     allImages.push(getUrlFile);
   }
 
@@ -376,7 +367,7 @@ fmFunctions.createAnArticle = async (req, res) => {
     fileName: allImages,
     categories:categories})
 
- const youArticle = await fm_Item.save()
+  await fm_Item.save()
  
   res.json({
     msg:"Articulo publicado con exito"
