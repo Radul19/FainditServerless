@@ -378,6 +378,31 @@ fmFunctions.createAnArticle = async (req, res) => {
     });
   }
 };
+//create An Article
+fmFunctions.getAllFmItems = async (req, res) => {
+  try {
+    const filter = {};
+    const allArtigle = await FM_Item.find(filter)
+  res.json(allArtigle)
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+};
+
+
+
+/* fmFunctions.name = async (req, res) => {
+  try {
+   
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+}; */
+
 
 
 
