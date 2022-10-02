@@ -1,24 +1,19 @@
 const { Schema, model, ObjectId } = require('mongoose')
 
 const FM_ItemSchema = new Schema({
-  fileName: { type: String, required: true },
-  description: { type: String, required: true },
-  ownerId: { type: String, required: true },
-  price: { type: Number, required: true },
-  viewed: { type: String, default: 0 },
-  interactions: { type: String, default: 0 },
-  place: { type: String, required: true },
-  favorites: [],
-  base64: {
-    type: String,
-    required: true,
-    default: 'https://kartox.com/cdnassets/categories/grid/K0502-1_l.jpg',
-  },
-  categories: []
+  title: { type: String, required: true  },// filename
+  description: { type: String, required: true  },
+  ownerId: { type: String, required: true  },
+  price: { type: Number, required: true  },
+  viewed: { type: String ,default:0 },
+  interactions: { type: String, default:0  },
+  place: { type: String, required: true   },
+  favorites:[],
+  fileName: [],// base64
+  categories:[]
 }, {
   timestamps: true
 })
-
 /*
 Cambiar filename por title
 cambiar base64 por filename (tendra el nombre de la imagen para asi buscarla en el bucket)
