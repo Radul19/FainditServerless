@@ -4,8 +4,9 @@ import generalFunctions from "../Controllers/general_search";
 
 const router = Router();
 
-const { promiseTest } = generalFunctions
+const { promiseTest, getImages } = generalFunctions
 
 router.post("/testPromise", promiseTest);
+router.post("/getImages", getImages);
 
 export default router
