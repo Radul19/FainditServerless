@@ -10,6 +10,8 @@ import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3
 import mongoose from 'mongoose'
 import { url } from 'inspector';
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import uploadMultipleImages from '@/helpers/uploadMultipleImages';
+import getMultipleImages from '@/helpers/getMultipleImages';
 mongoose.connect(process.env.DB)
 
 const fmFunctions = {};
@@ -27,7 +29,7 @@ fmFunctions.uploadFile = async (base64, key, ownerId, id) => {
 
 
     const buffer = Buffer.from(base64, "base64");
- 
+
     const bucketParams = {
       Body: buffer,
       Bucket: process.env.BUCKET_NAME,
@@ -35,9 +37,9 @@ fmFunctions.uploadFile = async (base64, key, ownerId, id) => {
       ContentType: "image/png",
       acl: "public-read",
     };
-   s3Client.send(new PutObjectCommand(bucketParams));
-   //console.log("Success");
-  
+    s3Client.send(new PutObjectCommand(bucketParams));
+    //console.log("Success");
+
   } catch (err) {
     // error handling.
     console.log("Error", err.message);
@@ -45,7 +47,7 @@ fmFunctions.uploadFile = async (base64, key, ownerId, id) => {
   }
 };
 //Get Url the in Objet
-fmFunctions.getUrlFile = async (key ,ownerId, id) => {
+fmFunctions.getUrlFile = async (key, ownerId, id) => {
   try {
     const client = new S3Client({
       region: process.env.REGION,
@@ -54,7 +56,7 @@ fmFunctions.getUrlFile = async (key ,ownerId, id) => {
         secretAccessKey: process.env.SECRETACCESSKEY,
       }
     });
-    
+
     const command = new GetObjectCommand({
       Bucket: process.env.BUCKET_NAME,
       Key: `imagesFm/${ownerId}/${id}/${key}.png`,
@@ -108,7 +110,7 @@ fmFunctions.denunciate = async (req, res) => {
       description: req.body.description
     });
 
-     await denunciates.save()
+    await denunciates.save()
 
 
     res.status(200).json({
@@ -131,7 +133,7 @@ fmFunctions.addFavorites = async (req, res) => {
     let favourite = findUser.favorites;
 
     if (favourite == undefined) {
-       await FM_Item.updateOne({ _id: itemId }, { $set: { favorites: userId } });
+      await FM_Item.updateOne({ _id: itemId }, { $set: { favorites: userId } });
       res.json({
         msg: "articulo guardado en favoritos",
       });
@@ -144,7 +146,7 @@ fmFunctions.addFavorites = async (req, res) => {
         });
       } else {
         favourite.splice(favourite.indexOf(userId), 1);
-         await FM_Item.updateOne({ _id: itemId }, { $set: { favorites: favourite } });
+        await FM_Item.updateOne({ _id: itemId }, { $set: { favorites: favourite } });
         res.json({
           msg: "Articulo removido de tu lista de favoritos",
         });
@@ -158,10 +160,11 @@ fmFunctions.addFavorites = async (req, res) => {
   }
 };
 
-//Get all my articles
-fmFunctions.getAllArticles = async (req, res) => {
+//Get all my articles //// RENAMED
+fmFunctions.getAllMyFmItems = async (req, res) => {
   try {
-    const id = req.params.ownerId;
+    const id = req.params.id;
+    console.log(typeof id)
     const myArticles = await FM_Item.find({ ownerId: id }).select({
       description: 1,
       title: 1,
@@ -170,7 +173,16 @@ fmFunctions.getAllArticles = async (req, res) => {
       viewed: 1,
       interactions: 1,
     });
-    res.json(myArticles);
+
+    await Promise.all(myArticles.map(async (item) => {
+      const imgs_arr = await getMultipleImages(item.fileName)
+      item.fileName.splice(0, item.fileName.length, ...imgs_arr)
+      return item
+    }))
+
+    if (myArticles === undefined) res.json([]);
+    else res.json(myArticles);
+
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -234,6 +246,12 @@ fmFunctions.findFmiItem = async (req, res) => {
         place == null &&
         categories == null:
         const arr = await FM_Item.find({ title: new RegExp(title, "i") });
+        /// Promise to get multiple images
+        await Promise.all(arr.map(async (item) => {
+          const imgs_arr = await getMultipleImages(item.fileName)
+          item.fileName.splice(0, item.fileName.length, ...imgs_arr)
+          return item
+        }))
         res.json(arr);
         break;
       //The user put only filter of maximum price or minimum price
@@ -246,6 +264,12 @@ fmFunctions.findFmiItem = async (req, res) => {
           price: { $gte: priceMinFilter, $lte: priceMaxFilter },
           title: new RegExp(title, "i"),
         });
+        /// Promise to get multiple images
+        await Promise.all(arr2.map(async (item) => {
+          const imgs_arr = await getMultipleImages(item.fileName)
+          item.fileName.splice(0, item.fileName.length, ...imgs_arr)
+          return item
+        }))
         res.json(arr2);
         break;
       case title !== null &&
@@ -258,6 +282,12 @@ fmFunctions.findFmiItem = async (req, res) => {
           title: new RegExp(title, "i"),
           place: place,
         });
+        /// Promise to get multiple images
+        await Promise.all(arr3.map(async (item) => {
+          const imgs_arr = await getMultipleImages(item.fileName)
+          item.fileName.splice(0, item.fileName.length, ...imgs_arr)
+          return item
+        }))
         res.json(arr3);
         break;
       case title !== null &&
@@ -270,6 +300,12 @@ fmFunctions.findFmiItem = async (req, res) => {
           title: new RegExp(title, "i"),
           categories: { $in: categories },
         });
+        /// Promise to get multiple images
+        await Promise.all(arr4.map(async (item) => {
+          const imgs_arr = await getMultipleImages(item.fileName)
+          item.fileName.splice(0, item.fileName.length, ...imgs_arr)
+          return item
+        }))
         res.json(arr4);
         break;
       case title !== null &&
@@ -283,6 +319,12 @@ fmFunctions.findFmiItem = async (req, res) => {
           place: place,
           categories: { $in: categories },
         });
+        /// Promise to get multiple images
+        await Promise.all(arr5.map(async (item) => {
+          const imgs_arr = await getMultipleImages(item.fileName)
+          item.fileName.splice(0, item.fileName.length, ...imgs_arr)
+          return item
+        }))
         res.json(arr5);
         break;
 
@@ -303,6 +345,13 @@ fmFunctions.getAllFmItems = async (req, res) => {
   try {
 
     const result = await FM_Item.find()
+
+    /// FIX #2 (my fault)
+    await Promise.all(result.map(async (item) => {
+      const imgs_arr = await getMultipleImages(item.fileName)
+      item.fileName.splice(0, item.fileName.length, ...imgs_arr)
+      return item
+    }))
 
     if (result) {
       res.send({
@@ -348,31 +397,37 @@ fmFunctions.getAllFmFavItems = async (req, res) => {
 //create An Article
 fmFunctions.createAnArticle = async (req, res) => {
   try {
-    let { title, description, price, categories, fileName, place, ownerId } = req.body;
-  const allImages = []
-  const id = uuidv4()
-  for (let i = 0; i < fileName.length; i++) {
-    const key = i
-                       await fmFunctions.uploadFile(fileName[i], key, ownerId, id);
-    const getUrlFile = await fmFunctions.getUrlFile(key, ownerId, id);
-    allImages.push(getUrlFile);
-  }
+    let { title, description, price, categories, base64, place, ownerId } = req.body;
+
+    //// FIX #1
+
+    // const allImages = []
+    // const id = uuidv4()
+    // for (let i = 0; i < fileName.length; i++) {
+    //   const key = i
+    //   await fmFunctions.uploadFile(fileName[i], key, ownerId, id);
+    //   const getUrlFile = await fmFunctions.getUrlFile(key, ownerId, id);
+    //   allImages.push(getUrlFile);
+    // }
+
+    const { fileNames } = await uploadMultipleImages(base64)
 
 
-  const fm_Item = new FM_Item({ 
-    title: title,
-    description: description,
-    ownerId: ownerId,
-    price: price,
-    place: place,
-    fileName: allImages,
-    categories:categories})
+    const fm_Item = new FM_Item({
+      title: title,
+      description: description,
+      ownerId: ownerId,
+      price: price,
+      place: place,
+      fileName: fileNames,
+      categories: categories
+    })
 
-  await fm_Item.save()
- 
-  res.json({
-    msg:"Articulo publicado con exito"
-  })
+    await fm_Item.save()
+
+    res.json({
+      msg: "Articulo publicado con exito"
+    })
   } catch (err) {
     res.status(500).json({
       msg: err.message,
@@ -380,31 +435,31 @@ fmFunctions.createAnArticle = async (req, res) => {
   }
 };
 //create An Article
-fmFunctions.getAllFmItems = async (req, res) => {
-  try {
-    const filter = {};
-    const allArtigle = await FM_Item.find(filter)
-  res.json(allArtigle)
-  } catch (err) {
-    res.status(500).json({
-      msg: err.message,
-    });
-  }
-};
+// fmFunctions.getAllFmItems = async (req, res) => {
+//   try {
+//     const filter = {};
+//     const allArtigle = await FM_Item.find(filter)
+//   res.json(allArtigle)
+//   } catch (err) {
+//     res.status(500).json({
+//       msg: err.message,
+//     });
+//   }
+// };
 
 
 
- fmFunctions.getAllFavourite = async (req, res) => {
-  try {
-    const id = req.params.id;
-    const myFavourites = await FM_Item.find({ favorites: id })
-   res.json(myFavourites)
-  } catch (err) {
-    res.status(500).json({
-      msg: err.message,
-    });
-  }
-}; 
+//  fmFunctions.getAllFavourite = async (req, res) => {
+//   try {
+//     const id = req.params.id;
+//     const myFavourites = await FM_Item.find({ favorites: id })
+//    res.json(myFavourites)
+//   } catch (err) {
+//     res.status(500).json({
+//       msg: err.message,
+//     });
+//   }
+// }; 
 
 /* fmFunctions.name = async (req, res) => {
   try {
