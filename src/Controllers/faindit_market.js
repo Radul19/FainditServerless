@@ -16,6 +16,15 @@ mongoose.connect(process.env.DB)
 
 const fmFunctions = {};
 
+//Take all the Image Names of S3 and replace them with PresignedUrl
+const convertFileNameToUrl = async (arr) => {
+  await Promise.all(arr.map(async (item) => {
+    const imgs_arr = await getMultipleImages(item.fileName)
+    item.fileName.splice(0, item.fileName.length, ...imgs_arr)
+    return item
+  }))
+}
+
 //Upload Image to S3
 fmFunctions.uploadFile = async (base64, key, ownerId, id) => {
   try {
@@ -164,7 +173,6 @@ fmFunctions.addFavorites = async (req, res) => {
 fmFunctions.getAllMyFmItems = async (req, res) => {
   try {
     const id = req.params.id;
-    console.log(typeof id)
     const myArticles = await FM_Item.find({ ownerId: id }).select({
       description: 1,
       title: 1,
@@ -234,110 +242,28 @@ fmFunctions.editArticle = async (req, res) => {
 //FM Markes search bar
 fmFunctions.findFmiItem = async (req, res) => {
   try {
-    const { title, place, price_min, price_max, categories } = req.body;
-    const priceMinFilter = price_min ?? 0;
-    const priceMaxFilter = price_max ?? 9999999;
+    /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
+    const { title = false, place = false, price_min = false, price_max = false, categories = false } = req.body;
 
-    switch (true) {
-      //The user did not put any filter
-      case title !== null &&
-        priceMaxFilter == 9999999 &&
-        priceMinFilter == 0 &&
-        place == null &&
-        categories == null:
-        const arr = await FM_Item.find({ title: new RegExp(title, "i") });
-        /// Promise to get multiple images
-        await Promise.all(arr.map(async (item) => {
-          const imgs_arr = await getMultipleImages(item.fileName)
-          item.fileName.splice(0, item.fileName.length, ...imgs_arr)
-          return item
-        }))
-        res.json(arr);
-        break;
-      //The user put only filter of maximum price or minimum price
-      case title !== null &&
-        priceMaxFilter !== null &&
-        priceMinFilter !== null &&
-        place == null &&
-        categories == null:
-        const arr2 = await FM_Item.find({
-          price: { $gte: priceMinFilter, $lte: priceMaxFilter },
-          title: new RegExp(title, "i"),
-        });
-        /// Promise to get multiple images
-        await Promise.all(arr2.map(async (item) => {
-          const imgs_arr = await getMultipleImages(item.fileName)
-          item.fileName.splice(0, item.fileName.length, ...imgs_arr)
-          return item
-        }))
-        res.json(arr2);
-        break;
-      case title !== null &&
-        priceMaxFilter !== null &&
-        place !== null &&
-        categories == null:
-        //User put only filter put a place (includes max and min by default)
-        const arr3 = await FM_Item.find({
-          price: { $gte: priceMinFilter, $lte: priceMaxFilter },
-          title: new RegExp(title, "i"),
-          place: place,
-        });
-        /// Promise to get multiple images
-        await Promise.all(arr3.map(async (item) => {
-          const imgs_arr = await getMultipleImages(item.fileName)
-          item.fileName.splice(0, item.fileName.length, ...imgs_arr)
-          return item
-        }))
-        res.json(arr3);
-        break;
-      case title !== null &&
-        priceMaxFilter !== null &&
-        place == null &&
-        categories !== null:
-        //The user only put categories (includes max and min by default)
-        const arr4 = await FM_Item.find({
-          price: { $gte: priceMinFilter, $lte: priceMaxFilter },
-          title: new RegExp(title, "i"),
-          categories: { $in: categories },
-        });
-        /// Promise to get multiple images
-        await Promise.all(arr4.map(async (item) => {
-          const imgs_arr = await getMultipleImages(item.fileName)
-          item.fileName.splice(0, item.fileName.length, ...imgs_arr)
-          return item
-        }))
-        res.json(arr4);
-        break;
-      case title !== null &&
-        priceMaxFilter !== null &&
-        place !== null &&
-        categories !== null:
-        //the user put both category and place (includes max and min by default)
-        const arr5 = await FM_Item.find({
-          price: { $gte: priceMinFilter, $lte: priceMaxFilter },
-          title: new RegExp(title, "i"),
-          place: place,
-          categories: { $in: categories },
-        });
-        /// Promise to get multiple images
-        await Promise.all(arr5.map(async (item) => {
-          const imgs_arr = await getMultipleImages(item.fileName)
-          item.fileName.splice(0, item.fileName.length, ...imgs_arr)
-          return item
-        }))
-        res.json(arr5);
-        break;
+    const arr = await FM_Item.find({
+      price: { $gte: price_min ? price_max : 0, $lte: price_max ? price_max : 99999 },
+      title: title ? new RegExp(title, "i") : { $exists: true },
+      place: place ? place : { $exists: true },
+      categories: categories ? { $in: categories } : { $exists: true },
+    });
 
-      default:
-        res.json({ msg: "no search text entered" });
-    }
+    await convertFileNameToUrl(arr)
+
+    res.send(arr)
+
   } catch (error) {
     console.log(error);
     res.status(500).json({
       msg: "Error inesperado",
     });
   }
-};
+}
+
 
 
 //// Funciones temporales para el front
