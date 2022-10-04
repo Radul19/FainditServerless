@@ -7,6 +7,7 @@ export default async (id_array) => {
     })
   }
   let urls = await Promise.all(id_array.map(id => getImg(id)))
+  // console.log(urls)
 
   return urls
 
