@@ -1,7 +1,6 @@
 import { User, FM_Item } from '../Models/Users_Schemas';
 import { VerifyUserReq } from '../Models/C_Side_Schemas';
 import UserPool from '../helpers/UserPool'
-// import 'cross-fetch/polyfill';
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 import getSignedURL from '../helpers/getSignedURL';
 import { v4 as uuidv4 } from 'uuid';
