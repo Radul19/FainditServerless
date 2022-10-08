@@ -1,3 +1,4 @@
+//@ts-check
 import { User } from "../Models/Users_Schemas";
 const jobFunctions = {};
 
@@ -65,6 +66,34 @@ jobFunctions.addJobExperience = async (req, res) => {
     res.json({
       msg: "Información guardada con exito",
     });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+
+//add Language in jobs
+jobFunctions.addLanguage = async (req, res) => {
+  try {
+    const { name, level, userID } = req.body;
+    const dataUser = await User.findById(userID);
+    const dataLanguage = dataUser.languages;
+
+    dataLanguage.push({
+      name: name,
+      level: level
+    });
+
+    await User.updateOne(
+      { _id: userID },
+      {
+        languages: dataLanguage,
+      }
+    );
+    res.json({ msg: "Información guardada con exito" });
+  
   } catch (error) {
     console.log(error);
     res.status(500).json({
