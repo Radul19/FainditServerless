@@ -2,11 +2,13 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 import getSignedUrl from './getSignedURL';
 
+const ACCESSKEYID: string = process.env.ACCESSKEYID ?? 'default'
+const SECRETACCESSKEY: string = process.env.SECRETACCESSKEY ?? 'default'
 
 const client = new S3Client({ region: 'us-east-1', 
 credentials: {
-  accessKeyId: process.env.ACCESSKEYID,
-  secretAccessKey: process.env.SECRETACCESSKEY,
+  accessKeyId: ACCESSKEYID,
+  secretAccessKey: SECRETACCESSKEY
 } });
 
 export default async (base64: string, fileName: string): Promise<String> => {

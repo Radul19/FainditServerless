@@ -1,4 +1,3 @@
-//@ts-check
 import { User } from "../Models/Users_Schemas";
 const jobFunctions = {};
 
