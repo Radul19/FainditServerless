@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import getMultipleImages from '@/helpers/getMultipleImages';
 import { FM_Item } from '../Models/FM_Schemas';
 import { WordArray } from 'amazon-cognito-identity-js';
+import getPlace from '../helpers/getPlace'
+
 
 const searchFunctions = {};
 
@@ -74,6 +76,23 @@ searchFunctions.applySearch = async (req, res) => {
     res.status(500).json({
       msg: "Error inesperado",
     });
+  }
+}
+searchFunctions.getLocation = async (req, res) => {
+  try {
+
+    const {lat,lon} = req.body
+    // console.log(lat,lon)
+
+    const {state,city,country} = await getPlace([lon,lat])
+
+    res.send({state,city,country})
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
   }
 }
 // searchFunctions.name = async (req, res) => {

@@ -300,9 +300,11 @@ fmFunctions.getAllFmItems = async (req, res) => {
   }
 }
 fmFunctions.getAllFmFavItems = async (req, res) => {
+  const { id } = req.params
   try {
-    const { userId } = req.params
-    const result = await FM_Item.find({ favorites: userId })
+
+    const result = await FM_Item.find({ favorites: id })
+    await convertFileNameToUrl(result)
 
     if (result) {
       res.send({
