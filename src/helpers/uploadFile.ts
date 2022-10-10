@@ -2,7 +2,12 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 import getSignedUrl from './getSignedURL';
 
-const client = new S3Client({ region: 'us-east-1' });
+
+const client = new S3Client({ region: 'us-east-1', 
+credentials: {
+  accessKeyId: process.env.ACCESSKEYID,
+  secretAccessKey: process.env.SECRETACCESSKEY,
+} });
 
 export default async (base64: string, fileName: string): Promise<String> => {
   const buffer = Buffer.from(base64, 'base64');

@@ -6,7 +6,7 @@ const router = Router();
 
 
 
-const { denunciate, addFavorites, editArticle, findFmiItem, createAnArticle, getAllFmItems, getAllFmFavItems ,getAllMyFmItems} = fmFunctions
+const { denunciate, addFavorites, editArticle, findFmiItem, createAnArticle, getAllFmItems, getAllFmFavItems ,getAllMyFmItems, removeItemFm} = fmFunctions
 
 //// FAINDIT MARKET ROUTES
 
@@ -26,5 +26,7 @@ router.post('/createAnArticle', createAnArticle);
 router.get('/getAllFmItems', getAllFmItems);
 //get All Favourite
 router.get('/getAllFmFavItems/:id', getAllFmFavItems);
+//remove item the Fm
+router.post('/removeItemFm', removeItemFm);
 
 export default router
