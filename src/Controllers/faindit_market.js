@@ -1,4 +1,3 @@
-//@ts-chec4
 import { FM_Item, denunciate } from '../Models/FM_Schemas';
 import UserPool from '../helpers/UserPool'
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
@@ -12,6 +11,7 @@ import { url } from 'inspector';
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import uploadMultipleImages from '@/helpers/uploadMultipleImages';
 import getMultipleImages from '@/helpers/getMultipleImages';
+import { deleteImages } from '../helpers/deleteFile'
 mongoose.connect(process.env.DB)
 
 const fmFunctions = {};
@@ -300,11 +300,9 @@ fmFunctions.getAllFmItems = async (req, res) => {
   }
 }
 fmFunctions.getAllFmFavItems = async (req, res) => {
-  const { id } = req.params
   try {
-
-    const result = await FM_Item.find({ favorites: id })
-    await convertFileNameToUrl(result)
+    const { userId } = req.params
+    const result = await FM_Item.find({ favorites: userId })
 
     if (result) {
       res.send({
@@ -364,34 +362,33 @@ fmFunctions.createAnArticle = async (req, res) => {
     });
   }
 };
-//create An Article
-// fmFunctions.getAllFmItems = async (req, res) => {
-//   try {
-//     const filter = {};
-//     const allArtigle = await FM_Item.find(filter)
-//   res.json(allArtigle)
-//   } catch (err) {
-//     res.status(500).json({
-//       msg: err.message,
-//     });
-//   }
-// };
 
 
+//remove Item Fm
+fmFunctions.removeItemFm = async (req, res) => {
+  try {
+    const { item_id, user_id } = req.body;
+    const data = await FM_Item.findById(item_id).exec();
+    if (user_id == data.ownerId) {
+      for (let i = 0; i < data.fileName.length; i++) {
+        deleteImages(data.fileName[i]);
+      }
 
-//  fmFunctions.getAllFavourite = async (req, res) => {
-//   try {
-//     const id = req.params.id;
-//     const myFavourites = await FM_Item.find({ favorites: id })
-//    res.json(myFavourites)
-//   } catch (err) {
-//     res.status(500).json({
-//       msg: err.message,
-//     });
-//   }
-// }; 
+      await FM_Item.findByIdAndRemove(item_id);
+      res.json({ mgs: "Articulo eliminado con exito" });
+    } else {
+      res.json({ mgs: "Error este articulo no te pertenece articulo" });
+    }
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+};
 
-/* fmFunctions.name = async (req, res) => {
+/*
+//
+fmFunctions.name = async (req, res) => {
   try {
    
   } catch (err) {
