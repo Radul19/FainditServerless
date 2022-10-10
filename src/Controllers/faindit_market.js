@@ -180,6 +180,7 @@ fmFunctions.getAllMyFmItems = async (req, res) => {
       fileName: 1,
       viewed: 1,
       interactions: 1,
+      favorites:1
     });
 
     await Promise.all(myArticles.map(async (item) => {
