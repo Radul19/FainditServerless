@@ -243,12 +243,14 @@ fmFunctions.editArticle = async (req, res) => {
 fmFunctions.findFmiItem = async (req, res) => {
   try {
     /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
-    const { title = false, place = false, price_min = false, price_max = false, categories = false } = req.body;
+    const { title = false, place = false, price_min = false, price_max = false, categories = false, stars = false } = req.body;
 
     const arr = await FM_Item.find({
-      price: { $gte: price_min ? price_max : 0, $lte: price_max ? price_max : 99999 },
+      price: { $gte: price_min ? price_min : 0, $lte: price_max ? price_max : 99999 },
       title: title ? new RegExp(title, "i") : { $exists: true },
-      place: place ? place : { $exists: true },
+      "place.country": place.country ? place.country : { $exists: true },
+      "place.state": place.state ? place.state : { $exists: true },
+      "place.city": place.city ? place.city : { $exists: true },
       categories: categories ? { $in: categories } : { $exists: true },
     });
 
@@ -297,10 +299,11 @@ fmFunctions.getAllFmItems = async (req, res) => {
   }
 }
 fmFunctions.getAllFmFavItems = async (req, res) => {
-  const { userId } = req.params
+  const { id } = req.params
   try {
 
-    const result = await FM_Item.find({ favorites: userId })
+    const result = await FM_Item.find({ favorites: id })
+    await convertFileNameToUrl(result)
 
     if (result) {
       res.send({
