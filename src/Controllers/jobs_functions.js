@@ -1,4 +1,3 @@
-//@ts-check
 import { User } from "../Models/Users_Schemas";
 const jobFunctions = {};
 
@@ -101,6 +100,39 @@ jobFunctions.addLanguage = async (req, res) => {
     });
   }
 };
+
+//delete Job Experience
+jobFunctions.deleteJobExperience = async (req, res) => {
+  try {
+    const { userID, id } = req.body;
+    const dataUser = await User.findById(userID);
+    const jobs = dataUser.jobs;
+
+    let idNum = jobs.findIndex((element) => {
+      return element.id === id;
+    });
+
+    if (idNum == -1) {
+      res.status(500).json({
+        msg: "Error inesperado",
+      });
+    } else {
+      jobs.splice(idNum, 1);
+
+      await User.updateOne({ _id: userID }, { jobs: jobs });
+      res.send({
+        msg: "Información guardada con exito",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+
+
 
 export default jobFunctions;
 // jobFunctions.name = (req, res) => {
