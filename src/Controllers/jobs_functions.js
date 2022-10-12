@@ -163,6 +163,37 @@ jobFunctions.removeLanguage = async (req, res) => {
   }
 };
 
+//delete Study
+jobFunctions.deleteStudy = async (req, res) => {
+  try {
+    const { userID, id } = req.body;
+    const dataUser = await User.findById(userID);
+    const degrees = dataUser.degrees;
+
+    let idNum = degrees.findIndex((element) => {
+      return element.id === id;
+    });
+
+    if (idNum == -1) {
+      res.status(500).json({
+        msg: "Error inesperado",
+      });
+    } else {
+      degrees.splice(idNum, 1);
+
+      await User.updateOne({ _id: userID }, { degrees: degrees });
+      res.send({
+        msg: "Información guardada con exito",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+
 
 export default jobFunctions;
 //
