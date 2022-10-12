@@ -132,9 +132,40 @@ jobFunctions.deleteJobExperience = async (req, res) => {
   }
 };
 
+//remove Language
+jobFunctions.removeLanguage = async (req, res) => {
+  try {
+    const { userID, id } = req.body;
+    const dataUser = await User.findById(userID);
+    const languages = dataUser.languages;
+
+    let idNum = languages.findIndex((element) => {
+      return element.id === id;
+    });
+
+    if (idNum == -1) {
+      res.status(500).json({
+        msg: "Error inesperado",
+      });
+    } else {
+      languages.splice(idNum, 1);
+
+      await User.updateOne({ _id: userID }, { languages: languages });
+      res.send({
+        msg: "Información guardada con exito",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
 
 
 export default jobFunctions;
+//
 // jobFunctions.name = (req, res) => {
 //   try {
 
