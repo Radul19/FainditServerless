@@ -37,7 +37,7 @@ const UserSchema = new Schema(
        level: { type: String, required: true } ,
        studying: { type: Boolean, required: true } ,
        since: { type: String, required: true } ,
-      unitil: { type: String, required: true } }
+      until: { type: String, required: true } }
     ],
     jobs: [
       { name: { type: String, required: false } ,

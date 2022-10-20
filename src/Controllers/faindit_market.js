@@ -1,4 +1,5 @@
 import { FM_Item, denunciate } from '../Models/FM_Schemas';
+import { User } from '../Models/Users_Schemas';
 import UserPool from '../helpers/UserPool'
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 import getSignedURL from '../helpers/getSignedURL';
@@ -180,7 +181,7 @@ fmFunctions.getAllMyFmItems = async (req, res) => {
       fileName: 1,
       viewed: 1,
       interactions: 1,
-      favorites:1
+      favorites: 1
     });
 
     await Promise.all(myArticles.map(async (item) => {
@@ -246,18 +247,57 @@ fmFunctions.findFmiItem = async (req, res) => {
     /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
     const { title = false, place = false, price_min = false, price_max = false, categories = false, stars = false } = req.body;
 
-    const arr = await FM_Item.find({
+    console.log(req.body)
+
+    const query = {
       price: { $gte: price_min ? price_min : 0, $lte: price_max ? price_max : 99999 },
       title: title ? new RegExp(title, "i") : { $exists: true },
       "place.country": place.country ? place.country : { $exists: true },
       "place.state": place.state ? place.state : { $exists: true },
       "place.city": place.city ? place.city : { $exists: true },
       categories: categories ? { $in: categories } : { $exists: true },
-    });
+    }
 
-    await convertFileNameToUrl(arr)
+    /// TO UPDATE SEARCH JUST IN CASE
+    // const updatedResult = await FM_Item.updateMany(query, {
+    //   $inc: { insearch: 1 }
+    // });
 
-    res.send(arr)
+
+    let result = await FM_Item.find(query)
+    let arrUsers
+
+    // IF FILTER BY USER STARS
+    if (stars) {
+
+      let arrId = result.map(item => {
+        return mongoose.Types.ObjectId(item.ownerId)
+      })
+
+      arrUsers = await User.aggregate([{
+        $match: {
+          $expr: {
+            $gte: [{ $avg: '$stars' }, stars],
+          },
+          "_id": { "$in": arrId }
+        },
+      },
+      { $group: { _id: "$_id" } }])
+
+      arrUsers.forEach((item, index) => {
+        arrUsers[index] = item._id.toString()
+      })
+
+      result = result.filter(item => arrUsers.includes(item.ownerId)
+        // console.log(arrUsers.some(id => id === item.ownerId))
+      )
+
+    }
+
+    await convertFileNameToUrl(result)
+
+    res.send(result)
+    // res.send({ ok: true })
 
   } catch (error) {
     console.log(error);
@@ -266,8 +306,6 @@ fmFunctions.findFmiItem = async (req, res) => {
     });
   }
 }
-
-
 
 //// Funciones temporales para el front
 fmFunctions.getAllFmItems = async (req, res) => {
@@ -281,6 +319,7 @@ fmFunctions.getAllFmItems = async (req, res) => {
       item.fileName.splice(0, item.fileName.length, ...imgs_arr)
       return item
     }))
+
 
     if (result) {
       res.send({
@@ -350,7 +389,7 @@ fmFunctions.createAnArticle = async (req, res) => {
       price: price,
       place: place,
       fileName: fileNames,
-      categories: categories
+      categories: categories,
     })
 
     await fm_Item.save()
@@ -387,6 +426,38 @@ fmFunctions.removeItemFm = async (req, res) => {
     });
   }
 };
+
+fmFunctions.getContactInfo = async (req, res) => {
+  try {
+
+    const { id } = req.params
+
+    const userId = mongoose.Types.ObjectId(id)
+
+    const result = await User.aggregate([{
+      $match: { "_id": userId }
+    }, {
+      $project: {
+        _id: 1,
+        name: 1,
+        middlename: 1,
+        address: 1,
+        profile_pic: 1,
+        stars: { $avg: '$stars' },
+        contacts: 1,
+      }
+    }])
+
+    result[0].profile_pic = await getSignedURL(result[0].profile_pic)
+
+    // console.log(result)
+    res.send(result[0])
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+}
 
 /*
 //

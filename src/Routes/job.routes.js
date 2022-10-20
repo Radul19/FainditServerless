@@ -4,7 +4,7 @@ import jobFunctions from "../Controllers/jobs_functions";
 
 const router = Router();
 
-const {name, addStudy, addJobExperience, addLanguage} = jobFunctions;
+const { getExperience, addStudy, addJobExperience, addLanguage, deleteJobExperience, removeLanguage, deleteStudy } = jobFunctions;
 
 //// JOBS ROUTES
 
@@ -14,8 +14,13 @@ router.post('/addStudy', addStudy);
 router.post('/addJobExperience', addJobExperience);
 //add Study in Jobs
 router.post('/addLanguage', addLanguage);
-//Name
-router.post("/name",name );
-
+//get all experience
+router.get("/getExperience/:userId", getExperience);
+//delete Job Experience
+router.post("/deleteJob", deleteJobExperience);
+//delete  Language
+router.post("/deleteLanguage", removeLanguage);
+//delete Study
+router.post("/deleteStudy", deleteStudy);
 
 export default router

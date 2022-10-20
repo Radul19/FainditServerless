@@ -1,4 +1,4 @@
-import { User, FM_Item } from '../Models/Users_Schemas';
+import { User } from '../Models/Users_Schemas';
 import { VerifyUserReq } from '../Models/C_Side_Schemas';
 import UserPool from '../helpers/UserPool'
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
@@ -181,7 +181,7 @@ userFunctions.login = async (req, res) => {
         })
       },
       onFailure: (err) => {
-        // console.log('onFailure: ', err)
+        console.log('onFailure: ', err)
         if (err.code === 'UserNotConfirmedException') {
           res.status(401).json({
             msg: 'Ingrese el codigo de verificacion enviado a su correo antes de continuar',
