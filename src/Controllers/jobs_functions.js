@@ -217,16 +217,38 @@ jobFunctions.updateLanguage = async (req, res) => {
     })
   }
 }
+// update Job
+jobFunctions.updateJob = async (req, res) => {
+  try {
+    const { name, company, details, working, since, until, id,  userID} = req.body;
+
+  const query = {_id:userID, 'jobs._id': id};
+  const update ={$set:{ "jobs.$.name": name, "jobs.$.company": company, "jobs.$.working": working, "jobs.$.since": since,"jobs.$.until": until,  since,"jobs.$.details": details}};
+ 
+
+    await User.findOneAndUpdate(query, update)
+
+    res.send({
+      msg: "Información actualizada con exito",
+    });
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
 
 
 
 
 export default jobFunctions;
 //
-// jobFunctions.name = (req, res) => {
+// jobFunctions.name =  async (req, res) => {
 //   try {
 
-//     res.send(true)
+//     res.send("hola mundo")
 
 //   } catch (error) {
 //     console.log(error)
