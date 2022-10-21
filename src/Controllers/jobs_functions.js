@@ -239,6 +239,28 @@ jobFunctions.updateJob = async (req, res) => {
     })
   }
 }
+//edit Study
+jobFunctions.editStudy =  async (req, res) => {
+  try {
+    const { title, place, level, studying, since, until, id,  userID} = req.body;
+
+  const query = {_id:userID, 'degrees._id': id};
+  const update ={$set:{ "degrees.$.title": title, "degrees.$.place": place, "degrees.$.level": level, "degrees.$.studying": studying,"degrees.$.since": since,  since,"degrees.$.until": until}};
+ 
+
+    await User.findOneAndUpdate(query, update)
+
+    res.send({
+      msg: "Información actualizada con exito",
+    });
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
 
 
 
