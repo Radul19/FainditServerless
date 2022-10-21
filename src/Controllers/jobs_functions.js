@@ -1,3 +1,4 @@
+//@ts-check4
 import { User } from "../Models/Users_Schemas";
 const jobFunctions = {};
 
@@ -193,6 +194,31 @@ jobFunctions.deleteStudy = async (req, res) => {
     });
   }
 };
+
+//Update Language
+jobFunctions.updateLanguage = async (req, res) => {
+  try {
+    const { name, level, id, userID} = req.body;
+
+  const query = {_id:userID, 'languages._id': id};
+  const update ={$set:{ "languages.$.name": name, "languages.$.level": level }};
+ 
+
+    await User.findOneAndUpdate(query, update)
+
+    res.send({
+      msg: "Información actualizada con exito",
+    });
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+
 
 
 export default jobFunctions;
