@@ -1,5 +1,5 @@
 import simpleUploadFile from '@/helpers/simpleUploadFile';
-import { Executive } from '../Models/Executive_Schemas';
+import { Executive, Vacant } from '../Models/Executive_Schemas';
 import { v4 as uuidv4 } from 'uuid';
 import uploadFile from '@/helpers/uploadFile';
 
@@ -63,6 +63,7 @@ executiveFunctions.createMarket = async (req, res) => {
       favorite: [],
       catalogue: [],
       sub_categories: [],
+      vacants: [],
     })
 
     await newExecutive.save()
@@ -107,13 +108,13 @@ executiveFunctions.getMarket = async (req, res) => {
 
     const result = await Executive.findOne({ _id: id })
 
-    if(result !== null){
+    if (result !== null) {
       res.send({
         result
       })
-    }else{
+    } else {
       res.status(404).json({
-        msg:'No hay ningun comercio asociado con el ID'
+        msg: 'No hay ningun comercio asociado con el ID'
       })
     }
 
@@ -125,6 +126,40 @@ executiveFunctions.getMarket = async (req, res) => {
     })
   }
 }
+executiveFunctions.addVacant = async (req, res) => {
+  try {
+
+    const result = new Vacant(req.body)
+    await result.save()
+
+    res.json(result);
+
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+executiveFunctions.deleteVacant = async (req, res) => {
+  try {
+
+    const result = await Vacant.deleteOne({ _id: req.body._id })
+
+    res.json(result);
+
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+
+
 export default executiveFunctions
 // executiveFunctions.name = (req, res) => {
 //   try {

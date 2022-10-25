@@ -174,7 +174,8 @@ userFunctions.login = async (req, res) => {
       onSuccess: async (data) => {
         // console.log('Success: ', data)
         const user = await User.findOne({ email: email })
-        console.log(user)
+        user.profile_pic = await getSignedURL(user.profile_pic)
+        // console.log(user)
         res.status(200).json({
           msg: 'Cuenta loggeada',
           userData: user
@@ -383,20 +384,42 @@ userFunctions.editUserData = async (req, res) => {
   try {
 
     const { name, phone, middlename, address, id } = req.body
-    
-    const user = await User.updateOne({ id:id }, { $set: { name,phone,middlename,address } })
-    console.log(user.matchedCount > 0 )
-    if(user.matchedCount > 0 ){
+
+    const user = await User.updateOne({ id: id }, { $set: { name, phone, middlename, address } })
+    console.log(user.matchedCount > 0)
+    if (user.matchedCount > 0) {
       res.json({
         msg: 'Datos actualizados con exito'
       })
-    }else{
+    } else {
       res.status(404).json({
         msg: 'Usuario no econtrado, los datos no se han actualizado'
       })
     }
 
 
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+userFunctions.getUserData = async (req, res) => {
+  try {
+
+    const { id } = req.params
+
+    console.log(id)
+
+    const result = await User.findOne({ _id: id })
+
+
+    result.profile_pic = await getSignedURL(result.profile_pic)
+
+    res.send(result)
+    // res.send({ ok: true })
 
   } catch (error) {
     console.log(error)

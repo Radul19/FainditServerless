@@ -1,5 +1,14 @@
-const mongoose = require('mongoose')
-mongoose.connect(process.env.DB).then()
-  .catch(e=>console.log(e))
-    // console.log(e)
-    
+const { connect } = require('mongoose')
+
+const connectDB = async () => {
+  try {
+      await connect(process.env.DB)
+      console.log('connect to db')
+
+  } catch (error) {
+      console.log(error)
+  }
+
+}
+
+connectDB()
