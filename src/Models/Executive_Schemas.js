@@ -47,7 +47,7 @@ const ItemSchema = new Schema({
   favorites: { type: Array, required: true },
   images: { type: Array, required: true },
   place: { type: String, required: true },
-  duration: { type: String, required: true },
+  reviews: { type: Object, required: true },
   marketID: { type: String, required: true },
 })
 
