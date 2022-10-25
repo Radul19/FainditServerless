@@ -39,6 +39,18 @@ const VacantSchema = new Schema({
   timestamps: true
 })
 
+const ItemSchema = new Schema({
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  price: { type: Number, required: true },
+  categories: { type: Array, required: true },
+  favorites: { type: Array, required: true },
+  images: { type: Array, required: true },
+  place: { type: String, required: true },
+  duration: { type: String, required: true },
+  marketID: { type: String, required: true },
+})
+
 
 export const Executive = model('Executive', ExecutiveSchema)
 export const Vacant = model('Vacant', VacantSchema)
