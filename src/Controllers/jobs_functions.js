@@ -399,6 +399,7 @@ jobFunctions.applyToVacant = async (req, res) => {
 
 
 export default jobFunctions;
+//
 // jobFunctions.name = (req, res) => {
 //   try {
 

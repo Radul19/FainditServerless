@@ -1,23 +1,27 @@
 const { Schema, model } = require('mongoose')
 
 const ExecutiveSchema = new Schema({
-  rif: { type: String, required: true },
   name: { type: String, required: true },
-  rate: { type: Object, required: true },
-  social: { type: String, required: true },
-  address: { type: String, required: true },
-  owner_id: { type: Array, required: true },
-  relation: { type: String, required: false },
-  schedule: { type: Object, required: false },
-  catalogue: { type: Array, required: false },
-  delivery: { type: Boolean, required: false },
-  categories: { type: Array, required: false },
-  comments: { type: Object, required: false },
-  photos_name: { type: Array, required: false },
   description: { type: String, required: false },
-  extra_links: { type: String, required: false },
+  catalogue: { type: Array, required: false },
+  ownerID: { type: String, required: true },
+  admins: { type: Array, required: false },
+  categories: { type: Array, required: false },
+  social: { type: Object, required: true },
+  stadistics: { type: Object, required: false },
+  schedule: { type: Object, required: false },
+  delivery: { type: Boolean, required: false },
+  address: { type: String, required: true },
+  rates: { type: Object, required: true },
+  photos: { type: Array, required: false },
+  logo: { type: String, required: false },
+  membership: { type: Boolean, required: false },
+  promotions: { type: Array, required: true },
+  rif: { type: String, required: true },
+  relation: { type: String, required: false },
   sub_categories: { type: Array, required: false },
-  logo_filename: { type: String, required: false },
+  place: { type: Object, required: false },
+
 
 }, {
   timestamps: true
@@ -39,7 +43,27 @@ const VacantSchema = new Schema({
   timestamps: true
 })
 
+const ItemSchema = new Schema({
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  price: { type: Number, required: true },
+  categories: { type: Array, required: true },
+  favorites: { type: Array, required: true },
+  images: { type: Array, required: true },
+  place: { type: Object, required: true },
+  reviews: [{
+    userID: { type: String, required: true },
+    comment: { type: String, required: true },
+    stars: { type: String, required: true },
+    date: { type: String, required: true },
+    reply: { type: String, required: true },
+    replyDate: { type: String, required: true },
+  }],
+  marketID: { type: String, required: true },
+})
+
 
 export const Executive = model('Executive', ExecutiveSchema)
 export const Vacant = model('Vacant', VacantSchema)
+export const Item = model('Item', ItemSchema)
 
