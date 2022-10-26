@@ -4,7 +4,7 @@ const ExecutiveSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String, required: false },
   catalogue: { type: Array, required: false },
-  owner_id: { type: String, required: true },
+  ownerID: { type: String, required: true },
   admins: { type: Array, required: false },
   categories: { type: Array, required: false },
   social: { type: Object, required: true },
@@ -12,7 +12,7 @@ const ExecutiveSchema = new Schema({
   schedule: { type: Object, required: false },
   delivery: { type: Boolean, required: false },
   address: { type: String, required: true },
-  rate: { type: Object, required: true },
+  rates: { type: Object, required: true },
   photos: { type: Array, required: false },
   logo: { type: String, required: false },
   membership: { type: Boolean, required: false },
@@ -20,6 +20,7 @@ const ExecutiveSchema = new Schema({
   rif: { type: String, required: true },
   relation: { type: String, required: false },
   sub_categories: { type: Array, required: false },
+  place: { type: Object, required: false },
 
 
 }, {
@@ -49,12 +50,20 @@ const ItemSchema = new Schema({
   categories: { type: Array, required: true },
   favorites: { type: Array, required: true },
   images: { type: Array, required: true },
-  place: { type: String, required: true },
-  reviews: { type: Object, required: true },
+  place: { type: Object, required: true },
+  reviews: [{
+    userID: { type: String, required: true },
+    comment: { type: String, required: true },
+    stars: { type: String, required: true },
+    date: { type: String, required: true },
+    reply: { type: String, required: true },
+    replyDate: { type: String, required: true },
+  }],
   marketID: { type: String, required: true },
 })
 
 
 export const Executive = model('Executive', ExecutiveSchema)
 export const Vacant = model('Vacant', VacantSchema)
+export const Item = model('Item', ItemSchema)
 

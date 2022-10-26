@@ -1,7 +1,9 @@
 import simpleUploadFile from '@/helpers/simpleUploadFile';
-import { Executive, Vacant } from '../Models/Executive_Schemas';
+import { Executive, Vacant, Item } from '../Models/Executive_Schemas';
 import { v4 as uuidv4 } from 'uuid';
 import uploadFile from '@/helpers/uploadFile';
+import uploadMultipleImages from '@/helpers/uploadMultipleImages';
+import deleteMultipleImages from '@/helpers/deleteMultipleImages';
 
 const executiveFunctions = {};
 
@@ -158,6 +160,111 @@ executiveFunctions.deleteVacant = async (req, res) => {
   }
 }
 
+//// 25 / 10 / 2022
+executiveFunctions.myExecutiveModes = async (req, res) => {
+  try {
+
+    const { name, userID } = req.body
+    const result = await Executive.find({
+      name: name.length > 0 ? new RegExp(name, "i") : { $exists: true },
+      $or: [{ admins: userID }, { ownerID: userID }]
+    })
+
+    res.send(result)
+
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+executiveFunctions.registerExecutiveMode = async (req, res) => {
+  try {
+
+    const newExecutive = new Executive(req.body)
+    await newExecutive.save()
+
+    res.send(newExecutive)
+
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+executiveFunctions.addItem = async (req, res) => {
+  try {
+
+    const { ...data } = req.body
+
+    if (data.images) {
+      const { fileNames } = await uploadMultipleImages(data.images)
+      data.images = fileNames
+    }
+
+    const newItem = new Item(data)
+    await newItem.save()
+
+    res.send(newItem)
+
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+executiveFunctions.editItem = async (req, res) => {
+  try {
+
+    const { itemID, images: imagesArr, ...data } = req.body
+
+    const { fileNames: images } = await uploadMultipleImages(imagesArr)
+
+
+    if (data.old_images) {
+      await deleteMultipleImages(data.old_images)
+    }
+
+    const result = await Item.findOneAndUpdate({ _id: itemID },
+      { images, ...data },
+      { new: true })
+
+    res.send(result)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+executiveFunctions.deleteItem = async (req, res) => {
+  try {
+
+    const { itemID } = req.body
+
+    const result = await Item.findByIdAndDelete(itemID)
+
+    if (result) {
+      await deleteMultipleImages(result.images)
+    }
+
+    res.send(result)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
 
 
 export default executiveFunctions
