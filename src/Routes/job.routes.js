@@ -4,7 +4,7 @@ import jobFunctions from "../Controllers/jobs_functions";
 
 const router = Router();
 
-const {name, addStudy, addJobExperience, addLanguage, deleteJobExperience, removeLanguage, deleteStudy, updateLanguage, updateJob, editStudy} = jobFunctions;
+const { getExperience, addStudy, addJobExperience, addLanguage, deleteJobExperience, removeLanguage, deleteStudy, editStudy, editJob, editLanguage, saveCv, editCv, deleteCv, searchVacant, getAllVacants, applyToVacant } = jobFunctions;
 
 //// JOBS ROUTES
 
@@ -14,19 +14,30 @@ router.post('/addStudy', addStudy);
 router.post('/addJobExperience', addJobExperience);
 //add Study in Jobs
 router.post('/addLanguage', addLanguage);
-//Name
-router.post("/name",name );
+//get all experience
+router.get("/getExperience/:userId", getExperience);
 //delete Job Experience
-router.post("/deleteJobExperience",deleteJobExperience );
+router.post("/deleteJob", deleteJobExperience);
 //delete  Language
-router.post("/removeLanguage",removeLanguage );
+router.post("/deleteLanguage", removeLanguage);
 //delete Study
-router.post("/deleteStudy",deleteStudy );
-//update Language
-router.post("/updateLanguage",updateLanguage );
-//update Job
-router.post("/updateJob",updateJob );
-//edit Study
-router.post("/editStudy",editStudy );
-
+router.post("/deleteStudy", deleteStudy);
+//edit study
+router.post('/editStudy', editStudy);
+//edit job
+router.post('/editJob', editJob);
+//edit langauge
+router.post('/editLanguage', editLanguage);
+//save CV
+router.post('/saveCv', saveCv);
+//edit Cv
+router.post('/editCv', editCv);
+//delete Cv
+router.post('/deleteCv', deleteCv);
+//apply to vacant
+router.post('/applyToVacant', applyToVacant);
+// searh
+router.post('/searchVacant', searchVacant);
+// searh all vacants
+router.get('/getAllVacants', getAllVacants);
 export default router

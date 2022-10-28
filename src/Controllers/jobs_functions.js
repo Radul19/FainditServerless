@@ -1,38 +1,36 @@
-//@ts-check4
+import { GetBucketAnalyticsConfigurationCommand } from "@aws-sdk/client-s3";
 import { User } from "../Models/Users_Schemas";
+import mongoose from 'mongoose'
+import { Executive, Vacant } from "@/Models/Executive_Schemas";
 const jobFunctions = {};
 
-jobFunctions.name = (req, res) => {
-  try {
-    res.send(true);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msg: "Error inesperado",
-    });
-  }
-};
 
 //add Study
 jobFunctions.addStudy = async (req, res) => {
   try {
-    const { userID, unitil, since, studying, level, place, title } = req.body;
+    const { userID, until, since, studying, level, place, title } = req.body;
 
-    const dataUser = await User.findById(userID);
-    const dataDegrees = dataUser.degrees;
+    const result = await User.findOneAndUpdate({ _id: userID }, {
+      $push: {
+        degrees: {
+          title,
+          place,
+          level,
+          studying,
+          since,
+          until,
+        }
+      }
+    },
+      {
+        projection: {
+          degrees: 1
+        },
+        new: true
+      }
+    );
 
-    dataDegrees.push({
-      title: title,
-      place: place,
-      level: level,
-      studying: studying,
-      since: since,
-      unitil: unitil,
-    });
-    await User.updateOne({ _id: userID }, { degrees: dataDegrees });
-    res.json({
-      msg: "Información guardada con exito",
-    });
+    res.json(result);
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -45,27 +43,15 @@ jobFunctions.addStudy = async (req, res) => {
 jobFunctions.addJobExperience = async (req, res) => {
   try {
     const { name, company, details, working, since, until, userID } = req.body;
-    const dataUser = await User.findById(userID);
-    const dataJobs = dataUser.jobs;
 
-    dataJobs.push({
-      name: name,
-      company: company,
-      details: details,
-      working: working,
-      since: since,
-      until: until,
-    });
-
-    await User.updateOne(
-      { _id: userID },
-      {
-        jobs: dataJobs,
-      }
+    const result = await User.findOneAndUpdate({ _id: userID }, {
+      $push: { jobs: { name, company, details, working, since, until, userID } }
+    }, {
+      projection: { jobs: 1 },
+      new: true
+    }
     );
-    res.json({
-      msg: "Información guardada con exito",
-    });
+    res.json(result);
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -78,22 +64,17 @@ jobFunctions.addJobExperience = async (req, res) => {
 jobFunctions.addLanguage = async (req, res) => {
   try {
     const { name, level, userID } = req.body;
-    const dataUser = await User.findById(userID);
-    const dataLanguage = dataUser.languages;
 
-    dataLanguage.push({
-      name: name,
-      level: level
-    });
 
-    await User.updateOne(
-      { _id: userID },
-      {
-        languages: dataLanguage,
-      }
+    const result = await User.findOneAndUpdate({ _id: userID }, {
+      $push: { languages: { name, level } }
+    }, {
+      projection: { languages: 1 },
+      new: true
+    }
     );
-    res.json({ msg: "Información guardada con exito" });
-  
+    res.json(result);
+
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -101,6 +82,25 @@ jobFunctions.addLanguage = async (req, res) => {
     });
   }
 };
+
+//get All Experiences
+jobFunctions.getExperience = async (req, res) => {
+  try {
+
+    const { userId } = req.params
+
+    const result = await User.findOne({ _id: userId }, { degrees: 1, jobs: 1, languages: 1 })
+
+    res.send(result);
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+
 
 //delete Job Experience
 jobFunctions.deleteJobExperience = async (req, res) => {
@@ -168,6 +168,7 @@ jobFunctions.removeLanguage = async (req, res) => {
 jobFunctions.deleteStudy = async (req, res) => {
   try {
     const { userID, id } = req.body;
+
     const dataUser = await User.findById(userID);
     const degrees = dataUser.degrees;
 
@@ -184,7 +185,7 @@ jobFunctions.deleteStudy = async (req, res) => {
 
       await User.updateOne({ _id: userID }, { degrees: degrees });
       res.send({
-        msg: "Información guardada con exito",
+        msg: "Estudio eliminado con exito",
       });
     }
   } catch (error) {
@@ -195,20 +196,28 @@ jobFunctions.deleteStudy = async (req, res) => {
   }
 };
 
-//Update Language
-jobFunctions.updateLanguage = async (req, res) => {
+jobFunctions.editStudy = async (req, res) => {
   try {
-    const { name, level, id, userID} = req.body;
 
-  const query = {_id:userID, 'languages._id': id};
-  const update ={$set:{ "languages.$.name": name, "languages.$.level": level }};
- 
+    const { title, place, level, studying, since, until, _id, userID } = req.body
+    const result = await User.findOneAndUpdate(
+      { _id: userID, "degrees._id": _id },
+      {
+        $set: {
+          "degrees.$.title": title,
+          "degrees.$.place": place,
+          "degrees.$.level": level,
+          "degrees.$.studying": studying,
+          "degrees.$.since": since,
+          "degrees.$.until": until,
+        }
+      }, {
+      projection: { degrees: 1 },
+      new: true
+    }
+    )
 
-    await User.findOneAndUpdate(query, update)
-
-    res.send({
-      msg: "Información actualizada con exito",
-    });
+    res.send(result)
 
   } catch (error) {
     console.log(error)
@@ -217,20 +226,30 @@ jobFunctions.updateLanguage = async (req, res) => {
     })
   }
 }
-// update Job
-jobFunctions.updateJob = async (req, res) => {
+jobFunctions.editJob = async (req, res) => {
   try {
-    const { name, company, details, working, since, until, id,  userID} = req.body;
 
-  const query = {_id:userID, 'jobs._id': id};
-  const update ={$set:{ "jobs.$.name": name, "jobs.$.company": company, "jobs.$.working": working, "jobs.$.since": since,"jobs.$.until": until,  since,"jobs.$.details": details}};
- 
+    const { name, company, details, working, since, until, _id, userID } = req.body
+    console.log(req.body)
 
-    await User.findOneAndUpdate(query, update)
+    const result = await User.findOneAndUpdate(
+      { _id: userID, "jobs._id": _id },
+      {
+        $set: {
+          "jobs.$.name": name,
+          "jobs.$.company": company,
+          "jobs.$.details": details,
+          "jobs.$.working": working,
+          "jobs.$.since": since,
+          "jobs.$.until": until,
+        }
+      }, {
+      projection: { jobs: 1 },
+      new: true
+    }
+    )
 
-    res.send({
-      msg: "Información actualizada con exito",
-    });
+    res.send(result)
 
   } catch (error) {
     console.log(error)
@@ -239,20 +258,25 @@ jobFunctions.updateJob = async (req, res) => {
     })
   }
 }
-//edit Study
-jobFunctions.editStudy =  async (req, res) => {
+jobFunctions.editLanguage = async (req, res) => {
   try {
-    const { title, place, level, studying, since, until, id,  userID} = req.body;
 
-  const query = {_id:userID, 'degrees._id': id};
-  const update ={$set:{ "degrees.$.title": title, "degrees.$.place": place, "degrees.$.level": level, "degrees.$.studying": studying,"degrees.$.since": since,  since,"degrees.$.until": until}};
- 
+    const { name, level, _id, userID } = req.body
 
-    await User.findOneAndUpdate(query, update)
+    const result = await User.findOneAndUpdate(
+      { _id: userID, "languages._id": _id },
+      {
+        $set: {
+          "languages.$.name": name,
+          "languages.$.level": level,
+        }
+      }, {
+      projection: { languages: 1 },
+      new: true
+    }
+    )
 
-    res.send({
-      msg: "Información actualizada con exito",
-    });
+    res.send(result)
 
   } catch (error) {
     console.log(error)
@@ -262,7 +286,116 @@ jobFunctions.editStudy =  async (req, res) => {
   }
 }
 
+jobFunctions.saveCv = async (req, res) => {
+  try {
 
+    const { userID, ...cvData } = req.body
+
+    const result = await User.findOneAndUpdate(
+      { _id: userID },
+      { $push: { professionalProfiles: cvData } },
+      { projection: { professionalProfiles: 1 }, new: true })
+
+    res.send({ result, msg: 'Experiencia laboral registrada con exito' })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+jobFunctions.editCv = async (req, res) => {
+  try {
+
+    const { userID, _id, ...cvData } = req.body
+
+    const result = await User.findOneAndUpdate(
+      { _id: userID, "professionalProfiles._id": _id },
+      { $set: { "professionalProfiles.$": cvData } },
+      { projection: { professionalProfiles: 1 }, new: true })
+
+    res.send({ result, msg: 'Experiencia laboral editada con exito' })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+jobFunctions.deleteCv = async (req, res) => {
+  try {
+
+    const { userID, _id } = req.body
+
+    const objId = mongoose.Types.ObjectId(_id)
+
+    const result = await User.findOneAndUpdate(
+      { _id: userID },
+      { $pull: { professionalProfiles: { _id: _id } } },
+      { projection: { professionalProfiles: 1 }, new: true })
+
+    res.send({ result, msg: 'Experiencia laboral eliminada con exito' })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+jobFunctions.searchVacant = async (req, res) => {
+  try {
+
+    res.send(true)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+jobFunctions.getAllVacants = async (req, res) => {
+  try {
+
+    const result = await Vacant.find()
+
+    res.send(result)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+jobFunctions.applyToVacant = async (req, res) => {
+  try {
+
+    // const { name, details, qualities, languages, degrees, jobs, skills } = req.body
+    const { vacantID, ...data } = req.body
+
+    const result = await Vacant.findOneAndUpdate(
+      { _id: vacantID },
+      { $push: { applicants: { ...data }, } },
+      { projection: { vacants: 1 }, new: true }
+    )
+
+    res.json(result);
+    // res.send(true)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
 
 
 export default jobFunctions;

@@ -11,10 +11,13 @@ const FM_ItemSchema = new Schema({
   favorites: { type: Array },
   fileName: { type: Array }, // images fileNames
   categories: { type: Array },
+  insearch: { type: Number, required: false },
 }, {
   timestamps: true
 })
 
+// createdAt: { type: Date, default: Date.now },
+// createdAt: { type: Date, expires: 60, default: Date.now },
 
 const denunciateSchema = new Schema({
   item_id: { type: String, required: true },

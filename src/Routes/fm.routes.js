@@ -6,12 +6,12 @@ const router = Router();
 
 
 
-const { denunciate, addFavorites, editArticle, findFmiItem, createAnArticle, getAllFmItems, getAllFmFavItems ,getAllMyFmItems, removeItemFm} = fmFunctions
+const { denunciate, addFavorites, editArticle, findFmiItem, createAnArticle, getAllFmItems, getAllFmFavItems ,getAllMyFmItems, removeItemFm,getContactInfo} = fmFunctions
 
 //// FAINDIT MARKET ROUTES
 
 // report an item on the marketplaces
-router.post('/denunciate', denunciate);
+router.post('/sendReport', denunciate);
 //router for add favorites
 router.post('/addFavorites', addFavorites);
 //get All Articles /// RENAMED
@@ -28,5 +28,7 @@ router.get('/getAllFmItems', getAllFmItems);
 router.get('/getAllFmFavItems/:id', getAllFmFavItems);
 //remove item the Fm
 router.post('/removeItemFm', removeItemFm);
+//get contact modal info
+router.get('/getContactInfo/:id', getContactInfo);
 
 export default router

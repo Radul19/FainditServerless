@@ -18,6 +18,7 @@ const {
   forgotPasswordCode,
   verifyIDRequest,
   editUserData,
+  getUserData
 } = userFunctions;
 
 router.get("/", apitest);
@@ -35,5 +36,9 @@ router.post("/forgotPasswordSend", forgotPasswordSend);
 router.post("/forgotPasswordCode", forgotPasswordCode);
 router.post("/verifyIDRequest", verifyIDRequest);
 router.post("/editUserData", editUserData);
+
+//// Extra
+router.get("/getUserData/:id", getUserData);
+
 
 export default router
