@@ -174,15 +174,9 @@ fmFunctions.addFavorites = async (req, res) => {
 fmFunctions.getAllMyFmItems = async (req, res) => {
   try {
     const id = req.params.id;
-    const myArticles = await FM_Item.find({ ownerId: id }).select({
-      description: 1,
-      title: 1,
-      price: 1,
-      fileName: 1,
-      viewed: 1,
-      interactions: 1,
-      favorites: 1
-    });
+    const myArticles = await FM_Item.find({ ownerId: id })
+
+    if (myArticles === undefined) res.json([]);
 
     await Promise.all(myArticles.map(async (item) => {
       const imgs_arr = await getMultipleImages(item.fileName)
@@ -190,8 +184,7 @@ fmFunctions.getAllMyFmItems = async (req, res) => {
       return item
     }))
 
-    if (myArticles === undefined) res.json([]);
-    else res.json(myArticles);
+    res.json(myArticles);
 
   } catch (error) {
     console.log(error);
@@ -241,13 +234,13 @@ fmFunctions.editArticle = async (req, res) => {
     });
   }
 };
-//FM Markes search bar
+//F Marked search bar
 fmFunctions.findFmiItem = async (req, res) => {
   try {
     /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
     const { title = false, place = false, price_min = false, price_max = false, categories = false, stars = false } = req.body;
 
-    console.log(req.body)
+    // console.log(req.body)
 
     const query = {
       price: { $gte: price_min ? price_min : 0, $lte: price_max ? price_max : 99999 },
@@ -259,9 +252,9 @@ fmFunctions.findFmiItem = async (req, res) => {
     }
 
     /// TO UPDATE SEARCH JUST IN CASE
-    // const updatedResult = await FM_Item.updateMany(query, {
-    //   $inc: { insearch: 1 }
-    // });
+    const updatedResult = await FM_Item.updateMany(query, {
+      $inc: { insearch: 1 }
+    });
 
 
     let result = await FM_Item.find(query)
@@ -303,6 +296,40 @@ fmFunctions.findFmiItem = async (req, res) => {
     console.log(error);
     res.status(500).json({
       msg: "Error inesperado",
+    });
+  }
+}
+//Fm item clicked
+fmFunctions.fmClickedItem = async (req, res) => {
+  try {
+
+    const { itemID } = req.body
+    console.log(itemID)
+    console.log(req.body)
+
+    await FM_Item.updateOne({ _id: itemID }, { $inc: { viewed: 1 } })
+
+    res.send({ ok: true })
+
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+}
+
+//Fm item contacted
+fmFunctions.fmContactedItem = async (req, res) => {
+  try {
+
+    const { itemID } = req.body
+
+    await FM_Item.updateOne({ _id: itemID }, { $inc: { interactions: 1 } })
+    res.send({ ok: true })
+
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
     });
   }
 }
@@ -366,31 +393,11 @@ fmFunctions.getAllFmFavItems = async (req, res) => {
 //create An Article
 fmFunctions.createAnArticle = async (req, res) => {
   try {
-    let { title, description, price, categories, base64, place, ownerId } = req.body;
+    let { base64, ...data } = req.body;
 
-    //// FIX #1
+    const { fileNames: fileName } = await uploadMultipleImages(base64)
 
-    // const allImages = []
-    // const id = uuidv4()
-    // for (let i = 0; i < fileName.length; i++) {
-    //   const key = i
-    //   await fmFunctions.uploadFile(fileName[i], key, ownerId, id);
-    //   const getUrlFile = await fmFunctions.getUrlFile(key, ownerId, id);
-    //   allImages.push(getUrlFile);
-    // }
-
-    const { fileNames } = await uploadMultipleImages(base64)
-
-
-    const fm_Item = new FM_Item({
-      title: title,
-      description: description,
-      ownerId: ownerId,
-      price: price,
-      place: place,
-      fileName: fileNames,
-      categories: categories,
-    })
+    const fm_Item = new FM_Item({ ...data, fileName })
 
     await fm_Item.save()
 
@@ -469,7 +476,8 @@ fmFunctions.name = async (req, res) => {
       msg: err.message,
     });
   }
-}; */
+}; 
+*/
 
 
 export default fmFunctions;

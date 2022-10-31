@@ -5,13 +5,13 @@ const FM_ItemSchema = new Schema({
   description: { type: String, required: true },
   ownerId: { type: String, required: true },
   price: { type: Number, required: true },
-  viewed: { type: String, default: 0 },
-  interactions: { type: String, default: 0 },
+  viewed: { type: Number, default: 0 },
+  interactions: { type: Number, default: 0 },
   place: { type: Object, required: true },
   favorites: { type: Array },
   fileName: { type: Array }, // images fileNames
   categories: { type: Array },
-  insearch: { type: Number, required: false },
+  insearch: { type: Number, required: false, default: 0},
 }, {
   timestamps: true
 })

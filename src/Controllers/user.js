@@ -70,6 +70,7 @@ userFunctions.registerUser = async (req, res) => {
 
 };
 userFunctions.searchEmail = async (req, res) => {
+  console.log("hey")
   try {
     const { email } = req.params
     UserPool.signUp(email, '//**--', [], null, (err, data) => {

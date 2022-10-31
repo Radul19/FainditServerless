@@ -4,31 +4,19 @@ import mongoose from 'mongoose'
 import { Executive, Vacant } from "@/Models/Executive_Schemas";
 const jobFunctions = {};
 
-
+///////////////////////////////////////
+//////////////  DEGREE  ///////////////
+///////////////////////////////////////
 //add Study
 jobFunctions.addStudy = async (req, res) => {
   try {
-    const { userID, until, since, studying, level, place, title } = req.body;
+    const { userID, ...data } = req.body;
 
-    const result = await User.findOneAndUpdate({ _id: userID }, {
-      $push: {
-        degrees: {
-          title,
-          place,
-          level,
-          studying,
-          since,
-          until,
-        }
-      }
-    },
-      {
-        projection: {
-          degrees: 1
-        },
-        new: true
-      }
-    );
+    const result = await User.findOneAndUpdate({ _id: userID },
+      { $push: { degrees: { ...data } } },
+      { projection: { degrees: 1 }, new: true });
+
+    console.log(result)
 
     res.json(result);
   } catch (error) {
@@ -38,156 +26,20 @@ jobFunctions.addStudy = async (req, res) => {
     });
   }
 };
-
-//add Job Experience
-jobFunctions.addJobExperience = async (req, res) => {
-  try {
-    const { name, company, details, working, since, until, userID } = req.body;
-
-    const result = await User.findOneAndUpdate({ _id: userID }, {
-      $push: { jobs: { name, company, details, working, since, until, userID } }
-    }, {
-      projection: { jobs: 1 },
-      new: true
-    }
-    );
-    res.json(result);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msg: "Error inesperado",
-    });
-  }
-};
-
-//add Language in jobs
-jobFunctions.addLanguage = async (req, res) => {
-  try {
-    const { name, level, userID } = req.body;
-
-
-    const result = await User.findOneAndUpdate({ _id: userID }, {
-      $push: { languages: { name, level } }
-    }, {
-      projection: { languages: 1 },
-      new: true
-    }
-    );
-    res.json(result);
-
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msg: "Error inesperado",
-    });
-  }
-};
-
-//get All Experiences
-jobFunctions.getExperience = async (req, res) => {
-  try {
-
-    const { userId } = req.params
-
-    const result = await User.findOne({ _id: userId }, { degrees: 1, jobs: 1, languages: 1 })
-
-    res.send(result);
-
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msg: "Error inesperado",
-    });
-  }
-};
-
-
-//delete Job Experience
-jobFunctions.deleteJobExperience = async (req, res) => {
-  try {
-    const { userID, id } = req.body;
-    const dataUser = await User.findById(userID);
-    const jobs = dataUser.jobs;
-
-    let idNum = jobs.findIndex((element) => {
-      return element.id === id;
-    });
-
-    if (idNum == -1) {
-      res.status(500).json({
-        msg: "Error inesperado",
-      });
-    } else {
-      jobs.splice(idNum, 1);
-
-      await User.updateOne({ _id: userID }, { jobs: jobs });
-      res.send({
-        msg: "Información guardada con exito",
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msg: "Error inesperado",
-    });
-  }
-};
-
-//remove Language
-jobFunctions.removeLanguage = async (req, res) => {
-  try {
-    const { userID, id } = req.body;
-    const dataUser = await User.findById(userID);
-    const languages = dataUser.languages;
-
-    let idNum = languages.findIndex((element) => {
-      return element.id === id;
-    });
-
-    if (idNum == -1) {
-      res.status(500).json({
-        msg: "Error inesperado",
-      });
-    } else {
-      languages.splice(idNum, 1);
-
-      await User.updateOne({ _id: userID }, { languages: languages });
-      res.send({
-        msg: "Información guardada con exito",
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msg: "Error inesperado",
-    });
-  }
-};
-
 //delete Study
 jobFunctions.deleteStudy = async (req, res) => {
   try {
-    const { userID, id } = req.body;
 
-    const dataUser = await User.findById(userID);
-    const degrees = dataUser.degrees;
+    const { userID, _id } = req.body
 
-    let idNum = degrees.findIndex((element) => {
-      return element.id === id;
-    });
+    const result = await User.findOneAndUpdate(
+      { _id: userID },
+      { $pull: { degrees: { _id: _id }, "professionalProfiles.$[].degrees": _id } },
+      { projection: { professionalProfiles: 1, degrees: 1 }, new: true })
 
-    if (idNum == -1) {
-      res.status(500).json({
-        msg: "Error inesperado",
-      });
-    } else {
-      degrees.splice(idNum, 1);
+    res.send(result)
 
-      await User.updateOne({ _id: userID }, { degrees: degrees });
-      res.send({
-        msg: "Estudio eliminado con exito",
-      });
-    }
+
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -195,7 +47,7 @@ jobFunctions.deleteStudy = async (req, res) => {
     });
   }
 };
-
+//edit Study
 jobFunctions.editStudy = async (req, res) => {
   try {
 
@@ -226,6 +78,48 @@ jobFunctions.editStudy = async (req, res) => {
     })
   }
 }
+//////////////////////////////////////
+//////////////  JOBS  ////////////////
+//////////////////////////////////////
+//add Job Experience
+jobFunctions.addJobExperience = async (req, res) => {
+  try {
+    const { name, company, details, working, since, until, userID } = req.body;
+
+    const result = await User.findOneAndUpdate({ _id: userID }, {
+      $push: { jobs: { name, company, details, working, since, until, userID } }
+    }, {
+      projection: { jobs: 1 },
+      new: true
+    }
+    );
+    res.json(result);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+//delete Job Experience
+jobFunctions.deleteJobExperience = async (req, res) => {
+  try {
+    const { userID, _id } = req.body;
+
+    const result = await User.findOneAndUpdate(
+      { _id: userID },
+      { $pull: { jobs: { _id: _id }, "professionalProfiles.$[].jobs": _id } },
+      { projection: { professionalProfiles: 1, jobs: 1 }, new: true })
+
+    res.send(result)
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+// edit job Experience
 jobFunctions.editJob = async (req, res) => {
   try {
 
@@ -258,6 +152,51 @@ jobFunctions.editJob = async (req, res) => {
     })
   }
 }
+//////////////////////////////////////////
+//////////////  LANGUAGES  ///////////////
+//////////////////////////////////////////
+//add Language in jobs
+jobFunctions.addLanguage = async (req, res) => {
+  try {
+    const { name, level, userID } = req.body;
+
+
+    const result = await User.findOneAndUpdate({ _id: userID }, {
+      $push: { languages: { name, level } }
+    }, {
+      projection: { languages: 1 },
+      new: true
+    }
+    );
+    res.json(result);
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+//remove Language
+jobFunctions.removeLanguage = async (req, res) => {
+  try {
+    const { userID, _id } = req.body;
+
+    const result = await User.findOneAndUpdate(
+      { _id: userID },
+      { $pull: { languages: { _id: _id }, "professionalProfiles.$[].languages": _id } },
+      { projection: { professionalProfiles: 1, languages: 1 }, new: true })
+
+    res.send(result)
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+//edit Language
 jobFunctions.editLanguage = async (req, res) => {
   try {
 
@@ -285,7 +224,10 @@ jobFunctions.editLanguage = async (req, res) => {
     })
   }
 }
-
+/////////////////////////////////////////////////////
+//////////////  PROFESSIONAL PROFILE  ///////////////
+/////////////////////////////////////////////////////
+//save Professional Profile
 jobFunctions.saveCv = async (req, res) => {
   try {
 
@@ -296,6 +238,8 @@ jobFunctions.saveCv = async (req, res) => {
       { $push: { professionalProfiles: cvData } },
       { projection: { professionalProfiles: 1 }, new: true })
 
+    console.log(result)
+
     res.send({ result, msg: 'Experiencia laboral registrada con exito' })
 
   } catch (error) {
@@ -305,7 +249,7 @@ jobFunctions.saveCv = async (req, res) => {
     })
   }
 }
-
+//edit Professional Profile
 jobFunctions.editCv = async (req, res) => {
   try {
 
@@ -325,7 +269,7 @@ jobFunctions.editCv = async (req, res) => {
     })
   }
 }
-
+//delete Professional Profile
 jobFunctions.deleteCv = async (req, res) => {
   try {
 
@@ -347,7 +291,9 @@ jobFunctions.deleteCv = async (req, res) => {
     })
   }
 }
-
+////////////////////////////////////////
+//////////////  VACANTS  ///////////////
+////////////////////////////////////////
 jobFunctions.searchVacant = async (req, res) => {
   try {
 
@@ -396,7 +342,60 @@ jobFunctions.applyToVacant = async (req, res) => {
     })
   }
 }
+jobFunctions.vacantAddFav = async (req, res) => {
+  try {
 
+    const { userID, vacantID } = req.body
+
+    const result = await Vacant.findOneAndUpdate({ _id: vacantID }, { $push: { favorites: userID } })
+
+
+    res.json(result);
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'No se ha podido añadir la vacante a favoritos'
+    })
+  }
+}
+jobFunctions.vacantDelFav = async (req, res) => {
+  try {
+
+    const { userID, vacantID } = req.body
+
+    const result = await Vacant.findOneAndUpdate({ _id: vacantID }, { $pull: { favorites: userID } })
+
+
+    res.json(result);
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'No se ha podido eliminar la vacante de favoritos'
+    })
+  }
+}
+
+
+
+//get All Experiences
+jobFunctions.getExperience = async (req, res) => {
+  try {
+
+    const { userId } = req.params
+
+    const result = await User.findOne({ _id: userId }, { degrees: 1, jobs: 1, languages: 1 })
+
+    res.send(result);
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
 
 export default jobFunctions;
 //
