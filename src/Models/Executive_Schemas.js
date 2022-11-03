@@ -12,7 +12,7 @@ const ExecutiveSchema = new Schema({
   schedule: { type: Object, required: false },
   delivery: { type: Boolean, required: false },
   address: { type: String, required: true },
-  rates: { type: Object, required: true },
+  reviews: { type: Object, required: true },
   photos: { type: Array, required: false },
   logo: { type: String, required: false },
   membership: { type: Boolean, required: false },
@@ -28,7 +28,7 @@ const ExecutiveSchema = new Schema({
 })
 const VacantSchema = new Schema({
   name: { type: String, required: true },
-  place: { type: String, required: true },
+  place: { type: Object, required: true },
   salary: { type: Number, required: true },
   duration: { type: String, required: true },
   marketID: { type: String, required: true },
@@ -51,15 +51,17 @@ const ItemSchema = new Schema({
   favorites: { type: Array, required: true },
   images: { type: Array, required: true },
   place: { type: Object, required: true },
+  marketID: { type: String, required: true },
   reviews: [{
     userID: { type: String, required: true },
     comment: { type: String, required: true },
-    stars: { type: String, required: true },
-    date: { type: String, required: true },
+    stars: { type: Number, required: true },
+    date: { type: Date, required: true },
+    edited: { type: Boolean, required: true },
     reply: { type: String, required: true },
-    replyDate: { type: String, required: true },
+    reply_date: { type: Date, required: true },
+    reply_edited: { type: Boolean, required: true },
   }],
-  marketID: { type: String, required: true },
 })
 
 
