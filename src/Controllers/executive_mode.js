@@ -287,7 +287,7 @@ executiveFunctions.addComment = async (req, res) => {
     const dateNow = new Date()
     const query = {_id:itemID};
     const update = {$set:{ reviews:[{comment: comment,stars: stars, userID: userID, date: dateNow.toISOString(),edited: false }]}};  
-    const result = await Item.findOneAndUpdate(query,update)
+   await Item.findOneAndUpdate(query,update)
 
 
 
@@ -305,8 +305,30 @@ executiveFunctions.addComment = async (req, res) => {
 }
 
 
+//add Reply
+executiveFunctions.addReply = async (req, res) => {
+  try {
+    const dateNow = new Date()
+    const { itemID, commentID, reply } = req.body
+    const query = {_id:itemID,  'reviews._id': commentID};
+    const update = {$set:{"reviews.$.reply": reply,"reviews.$.reply_date":dateNow.toISOString(), "reviews.$.reply_edited": true }};  
+
+    await Item.findOneAndUpdate(query,update)
+
+    res.send({msg: 'Agregado respuesta con éxito'})
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+
 export default executiveFunctions
-// executiveFunctions.name = (req, res) => {
+//
+// executiveFunctions.name = async (req, res) => {
 //   try {
 
 //   } catch (error) {
