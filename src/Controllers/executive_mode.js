@@ -1,9 +1,11 @@
+//@ts-check4
 import simpleUploadFile from '@/helpers/simpleUploadFile';
 import { Executive, Vacant, Item } from '../Models/Executive_Schemas';
 import { v4 as uuidv4 } from 'uuid';
 import uploadFile from '@/helpers/uploadFile';
 import uploadMultipleImages from '@/helpers/uploadMultipleImages';
 import deleteMultipleImages from '@/helpers/deleteMultipleImages';
+import { User } from '@/Models/Users_Schemas';
 
 const executiveFunctions = {};
 
@@ -213,10 +215,10 @@ executiveFunctions.addItem = async (req, res) => {
 
     const { ...data } = req.body
 
-    if (data.images) {
+     if (data.images) {
       const { fileNames } = await uploadMultipleImages(data.images)
       data.images = fileNames
-    }
+    } 
 
     const newItem = new Item(data)
     await newItem.save()
@@ -268,6 +270,31 @@ executiveFunctions.deleteItem = async (req, res) => {
     }
 
     res.send(result)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//add Comment
+executiveFunctions.addComment = async (req, res) => {
+  try {
+    const { itemID, userID, comment, stars } = req.body
+
+    const dateNow = new Date()
+    const query = {_id:itemID};
+    const update = {$set:{ reviews:[{comment: comment,stars: stars, userID: userID, date: dateNow.toISOString(),edited: false }]}};  
+    const result = await Item.findOneAndUpdate(query,update)
+
+
+
+    res.send({msg: 'Agregado comentario con éxito '})
+
+
+
 
   } catch (error) {
     console.log(error)
