@@ -286,14 +286,11 @@ executiveFunctions.addComment = async (req, res) => {
 
     const dateNow = new Date()
     const query = {_id:itemID};
-    const update = {$set:{ reviews:[{comment: comment,stars: stars, userID: userID, date: dateNow.toISOString(),edited: false }]}};  
+    const update = {$push:{ reviews:[{comment: comment,stars: stars, userID: userID, date: dateNow.toISOString(),edited: false }]}};  
    await Item.findOneAndUpdate(query,update)
 
 
-
     res.send({msg: 'Agregado comentario con éxito '})
-
-
 
 
   } catch (error) {
@@ -308,8 +305,8 @@ executiveFunctions.addComment = async (req, res) => {
 //add Reply
 executiveFunctions.addReply = async (req, res) => {
   try {
-    const dateNow = new Date()
     const { itemID, commentID, reply } = req.body
+    const dateNow = new Date()    
     const query = {_id:itemID,  'reviews._id': commentID};
     const update = {$set:{"reviews.$.reply": reply,"reviews.$.reply_date":dateNow.toISOString(), "reviews.$.reply_edited": true }};  
 
@@ -325,12 +322,78 @@ executiveFunctions.addReply = async (req, res) => {
   }
 }
 
+//edit Comment
+executiveFunctions.editComment = async (req, res) => {
+  try {
+    const { itemID, userID ,comentID , comment, stars } = req.body
+
+    const query = {_id:itemID,  'reviews._id': comentID};
+    const update = {$set:{"reviews.$.comment": comment,"reviews.$.stars":stars, "reviews.$.edited": true }};  
+
+    await Item.findOneAndUpdate(query,update)
+
+    res.send({msg: 'Comentario actualizado con éxito'})
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//edit Reply
+executiveFunctions.editReply = async (req, res) => {
+  try {
+
+    const { itemID, commentID, reply } = req.body
+
+
+
+    const query = {_id:itemID,  'reviews._id': commentID};
+    const update = {$set:{"reviews.$.reply": reply }};  
+
+    await Item.findOneAndUpdate(query,update)
+
+    res.send({msg: 'Respuesta actualizado con éxito'})
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//delete Comment
+executiveFunctions.deleteComment = async (req, res) => {
+  try {
+    const { itemID, userID, commentID } = req.body
+
+    const query = {_id:itemID,  'reviews._id': commentID};
+    const update = {$pull:{ reviews:'reviews.comment'} };  
+//const update = {$pull:{"reviews.$.comment": commentID }};
+    await Item.findOneAndUpdate(query,update)
+
+    res.send({msg: 'Comentario Eliminado con éxito'})
+
+res.send('test')
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
 
 export default executiveFunctions
 //
 // executiveFunctions.name = async (req, res) => {
 //   try {
-
+//
+//
+// res.send('test')
 //   } catch (error) {
 //     console.log(error)
 //     res.status(500).json({
