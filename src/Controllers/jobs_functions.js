@@ -16,8 +16,6 @@ jobFunctions.addStudy = async (req, res) => {
       { $push: { degrees: { ...data } } },
       { projection: { degrees: 1 }, new: true });
 
-    console.log(result)
-
     res.json(result);
   } catch (error) {
     console.log(error);
@@ -326,11 +324,15 @@ jobFunctions.applyToVacant = async (req, res) => {
     // const { name, details, qualities, languages, degrees, jobs, skills } = req.body
     const { vacantID, ...data } = req.body
 
+    console.log(data)
+
     const result = await Vacant.findOneAndUpdate(
       { _id: vacantID },
-      { $push: { applicants: { ...data }, } },
+      { $push: { applicants: { status: 2, ...data }, } },
       { projection: { vacants: 1 }, new: true }
     )
+
+    console.log(result)
 
     res.json(result);
     // res.send(true)
@@ -377,8 +379,6 @@ jobFunctions.vacantDelFav = async (req, res) => {
   }
 }
 
-
-
 //get All Experiences
 jobFunctions.getExperience = async (req, res) => {
   try {
@@ -396,6 +396,62 @@ jobFunctions.getExperience = async (req, res) => {
     });
   }
 };
+jobFunctions.myRequest = async (req, res) => {
+  try {
+
+    const { userID } = req.body
+
+    let filter = {
+      name: 1,
+      place: 1,
+      salary: 1,
+      duration: 1,
+      marketID1: 1,
+      description: 1,
+      requiriments: 1,
+      "applicants.$": 1
+    }
+
+    const result = await Vacant.find({ "applicants.userID": userID }, { ...filter })
+    res.send(result)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+jobFunctions.delRequest = async (req, res) => {
+  try {
+
+    const { userID, vacantID } = req.body
+
+
+    let filter = {
+      name: 1,
+      place: 1,
+      salary: 1,
+      duration: 1,
+      marketID1: 1,
+      description: 1,
+      requiriments: 1,
+      "applicants.$": 1
+    }
+
+    const result = await Vacant.findOneAndUpdate({ _id: vacantID,"applicants.userID": userID  },
+      { $pull: { applicants: { userID: userID } } },
+      { $project: filter, returnNewDocument: true })
+    res.send(result)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
 
 export default jobFunctions;
 //

@@ -12,7 +12,7 @@ const ExecutiveSchema = new Schema({
   schedule: { type: Object, required: false },
   delivery: { type: Boolean, required: false },
   address: { type: String, required: true },
-  reviews: { type: Object, required: true },
+  reviews: { type: Array, required: true, default: [] },
   photos: { type: Array, required: false },
   logo: { type: String, required: false },
   membership: { type: Boolean, required: false },
@@ -38,6 +38,7 @@ const VacantSchema = new Schema({
   applicants: [{
     userID: { type: String, required: true },
     cvID: { type: String, required: true },
+    status: { type: Number, required: true, default: 2 }
   }],
 }, {
   timestamps: true

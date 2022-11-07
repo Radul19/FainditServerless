@@ -184,10 +184,10 @@ executiveFunctions.myExecutiveModes = async (req, res) => {
 
 executiveFunctions.registerExecutiveMode = async (req, res) => {
   try {
-
+    
     const { logo: logoImg, photos: photosArr, ...data } = req.body
 
-    
+
     //// THIS NEED TO BE BETTER ---TOFIX
     const logo = uuidv4()
     const logoUrl = await uploadFile(logoImg, logo)
@@ -198,7 +198,7 @@ executiveFunctions.registerExecutiveMode = async (req, res) => {
     await newExecutive.save()
 
     res.send(newExecutive)
-    
+
     // res.send(true)
 
   } catch (error) {
