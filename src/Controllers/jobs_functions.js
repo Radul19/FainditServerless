@@ -399,10 +399,10 @@ jobFunctions.getExperience = async (req, res) => {
 
 export default jobFunctions;
 //
-// jobFunctions.name = (req, res) => {
+// jobFunctions.name =  async (req, res) => {
 //   try {
 
-//     res.send(true)
+//     res.send("hola mundo")
 
 //   } catch (error) {
 //     console.log(error)
