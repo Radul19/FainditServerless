@@ -1,24 +1,77 @@
 import { User } from '../Models/Users_Schemas';
 import { VerifyUserReq } from '../Models/C_Side_Schemas';
 import UserPool from '../helpers/UserPool'
-import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
+import { CognitoUserAttribute, CognitoUser, AuthenticationDetails, } from 'amazon-cognito-identity-js';
 import getSignedURL from '../helpers/getSignedURL';
 import { v4 as uuidv4 } from 'uuid';
 import deleteImage from '../helpers/deleteImage';
 import uploadFile from '../helpers/uploadFile';
 import simpleUploadFile from '../helpers/simpleUploadFile';
-const userFunctions = {};
+import { deleteEmail } from '@/helpers/deleteEmail';
 
+
+const userFunctions = {};
 userFunctions.apitest = async (_, res) => {
   res.json({
     msg: 'Hello World test 2',
   });
 };
+userFunctions.searchEmail = async (req, res) => {
+  // console.log("hey")
+  try {
+    const { email } = req.params
 
+
+
+    UserPool.signUp(email, '//**--', [], null, async (err, data) => {
+      if (err) {
+        if (err.name === "UsernameExistsException") {
+
+          ///// CHECK EMAIL
+          const findEmail = await User.find({ email: email }, { email: 1 })
+          console.log(findEmail)
+          if (findEmail.length > 0) {
+            res.status(400).json({
+              msg: 'El correo ya está en uso'
+            })
+          } else {
+            const delResult = await deleteEmail(email)
+            res.status(200).json({
+              msg: 'El correo está disponible'
+            })
+          }
+
+
+
+
+
+        } else {
+          console.log(err)
+          res.status(200).json({
+            msg: 'El correo no está en uso'
+          })
+        }
+      } else {
+        console.log(err)
+        res.status(500).json({
+          msg: 'Situacion inesperada'
+        })
+      }
+    })
+
+
+    /** ERROR */
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
 userFunctions.registerUser = async (req, res) => {
   // console.log(req.body)
   try {
-    const { address, birth, card_id, confirmPassword, email, genre, middlename, name, num, password } = req.body;
+    const { email, password } = req.body;
 
 
     UserPool.signUp(email, password, [], null, async (err, data) => {
@@ -28,31 +81,12 @@ userFunctions.registerUser = async (req, res) => {
             msg: "El correo con el que se intenta registrar ya esta en uso",
           })
         } else {
+          console.log(err)
           res.status(409).json({
             msg: "Error inesperado, intente nuevamente en unos minutos",
           })
         }
       } else {
-
-        const newUser = new User({
-          name,
-          middlename,
-          email,
-          birth,
-          phone: '+58' + num,
-          id: data.userSub,
-          place: "someplace",
-          address,
-          country: "",
-          profile_pic: "profilepicture",
-          interest: [],
-          market: false,
-          viewer: false,
-          favorite: {},
-          membership: false,
-          notifications: [],
-        })
-        await newUser.save()
 
         res.status(200).json({
           msg: "Cuenta creada con exito",
@@ -69,52 +103,16 @@ userFunctions.registerUser = async (req, res) => {
 
 
 };
-userFunctions.searchEmail = async (req, res) => {
-  console.log("hey")
-  try {
-    const { email } = req.params
-    UserPool.signUp(email, '//**--', [], null, (err, data) => {
-      if (err) {
-        if (err.name === "UsernameExistsException") {
-          res.status(400).json({
-            msg: 'El correo ya está en uso'
-          })
-
-        } else {
-          // console.log(err)
-          res.status(200).json({
-            msg: 'El correo no está en uso'
-          })
-        }
-      } else {
-        res.status(500).json({
-          msg: 'Situacion inesperada'
-        })
-      }
-    })
-
-
-    /** ERROR */
-  } catch (error) {
-    console.log(error)
-    res.status(500).json({
-      msg: 'Error inesperado'
-    })
-  }
-}
 userFunctions.verifyEmailCode = async (req, res) => {
   try {
-    const { code, email } = req.body
-    let userData = {
+    const { code, email, num, ...userData } = req.body
+
+    let userInfo = {
       Username: email,
       Pool: UserPool,
     }
 
-
-    let cognitoUser = new CognitoUser(userData);
-    // console.log(cognitoUser)
-
-    // console.log(code,email)
+    let cognitoUser = new CognitoUser(userInfo);
 
     cognitoUser.confirmRegistration(code, true, async (err, result) => {
       if (err) {
@@ -124,13 +122,52 @@ userFunctions.verifyEmailCode = async (req, res) => {
         })
         return;
       }
-      // console.log('call result: ' + result);
-      const user = await User.findOne({ email: email })
+
+      const newUser = new User({
+        email,
+        phone: '+58' + num,
+        place: {
+          country: '',
+          state: '',
+          city: '',
+        },
+        contacts: {
+          whatsapp: '+58' + num,
+          instagram: '',
+          messenger: '',
+          messages: '',
+          phone: '',
+          otherLinks: []
+        },
+        ...userData,
+      })
+      await newUser.save()
+
+      newUser.profile_pic = await getSignedURL(newUser.profile_pic)
+
+
+
       res.status(200).json({
         msg: 'Cuenta verificada',
-        userData: user
+        userData: newUser
       })
     });
+
+    //// TEST
+    // const newUser = new User({
+    //   email,
+    //   phone: '+58' + num,
+    //   place: {
+    //     country: '',
+    //     state: '',
+    //     city: '',
+    //   },
+    //   ...userData,
+    // })
+    // await newUser.save()
+    // res.status(500).json({
+    //   msg: 'Error inesperado xd'
+    // })
 
 
   } catch (error) {
@@ -261,9 +298,7 @@ userFunctions.updateProfilePicture = async (req, res) => {
     const url = await uploadFile(base64, img_id);
     const deleteImg = await deleteImage(old_img)
 
-    const findUser = await User.findOne({ email: email })
-    findUser.profile_pic = img_id
-    await findUser.save()
+    const findUser = await User.findOneAndUpdate({ email: email }, { profile_pic: img_id })
 
     res.json({
       url, img_id, deleteImg,
