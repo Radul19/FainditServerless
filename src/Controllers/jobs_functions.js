@@ -2,6 +2,7 @@ import { GetBucketAnalyticsConfigurationCommand } from "@aws-sdk/client-s3";
 import { User } from "../Models/Users_Schemas";
 import mongoose from 'mongoose'
 import { Executive, Vacant } from "@/Models/Executive_Schemas";
+import { denunciatesVacant } from '../Models/FM_Schemas';
 const jobFunctions = {};
 
 ///////////////////////////////////////
@@ -496,6 +497,33 @@ jobFunctions.denyVacant =  async (req, res) => {
     })
   }
 }
+
+//report Vacant
+jobFunctions.reportVacant =  async (req, res) => {
+    try {
+      const { type, vacantID, description } = req.body
+      const denunciates = new denunciatesVacant({
+        type: type,
+        vacantID: vacantID,
+        description: description
+      });
+  
+      await denunciates.save()
+  
+  
+      res.status(200).json({
+        msg: 'Vacante reportado con exito'
+      })
+  
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({
+        msg: 'Error inesperado'
+      })
+    }
+  }
+
+
 
 
 export default jobFunctions;
