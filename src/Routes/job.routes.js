@@ -4,7 +4,7 @@ import jobFunctions from "../Controllers/jobs_functions";
 
 const router = Router();
 
-const { getExperience, addStudy, addJobExperience, addLanguage, deleteJobExperience, removeLanguage, deleteStudy, editStudy, editJob, editLanguage, saveCv, editCv, deleteCv, searchVacant, getAllVacants, applyToVacant, vacantAddFav, vacantDelFav, myRequest,delRequest } = jobFunctions;
+const { getExperience, addStudy, addJobExperience, addLanguage, deleteJobExperience, removeLanguage, deleteStudy, editStudy, editJob, editLanguage, saveCv, editCv, deleteCv, searchVacant, getAllVacants, applyToVacant, vacantAddFav, vacantDelFav, myRequest,delRequest, approveVacant, denyVacant } = jobFunctions;
 
 //// JOBS ROUTES
 
@@ -50,4 +50,9 @@ router.post('/vacantDelFav', vacantDelFav);
 router.post('/myRequest', myRequest);
 // delete request vacants
 router.post('/delRequest', delRequest);
+// approve Vacant
+router.post('/approveVacant', approveVacant);
+//deny Vacant
+router.post('/denyVacant', denyVacant);
+
 export default router

@@ -5,7 +5,7 @@ const ExecutiveSchema = new Schema({
   description: { type: String, required: false },
   catalogue: { type: Array, required: false },
   ownerID: { type: String, required: true },
-  admins: { type: Array, required: false },
+  zzz: { type: Array, required: false },
   categories: { type: Array, required: false },
   social: { type: Object, required: true },
   stadistics: { type: Object, required: false },
@@ -36,8 +36,8 @@ const VacantSchema = new Schema({
   description: { type: String, required: true },
   requiriments: { type: String, required: true },
   applicants: [{
-    userID: { type: String, required: true },
-    cvID: { type: String, required: true },
+    userID: { type: String, required: false },
+    cvID: { type: String, required: false },
     status: { type: Number, required: true, default: 2 }
   }],
 }, {

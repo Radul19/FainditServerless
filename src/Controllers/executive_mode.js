@@ -556,6 +556,27 @@ executiveFunctions.addExecutiveAdmin = async (req, res) => {
 }
 
 
+//delete Executive Admin
+executiveFunctions.deleteExecutiveAdmin = async (req, res) => {
+  try {
+
+    const { executiveID, userID } = req.body
+
+    const query = { _id:executiveID};
+    const update = {$pull:{admins:userID}};  
+
+    await Executive.findOneAndUpdate(query,update)
+
+
+    res.send({msg: 'Eliminado con Exito Administrador'})
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
 export default executiveFunctions
 //
 // executiveFunctions.name = async (req, res) => {

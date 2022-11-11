@@ -453,6 +453,51 @@ jobFunctions.delRequest = async (req, res) => {
   }
 }
 
+
+//approve Vacant
+jobFunctions.approveVacant =  async (req, res) => {
+  try {
+    const { userID, vacantID } = req.body
+    const query = { _id:vacantID};
+    const update = {$set:{applicants:{userID:userID, status:1}}};  
+
+    await Vacant.findOneAndUpdate(query,update)
+
+
+    res.send({msg: 'Vacante aprobada'})
+
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+
+//deny Vacant
+jobFunctions.denyVacant =  async (req, res) => {
+  try {
+
+    const { userID, vacantID } = req.body
+    const query = { _id:vacantID};
+    const update = {$set:{applicants:{userID:userID, status:3}}};  
+
+    await Vacant.findOneAndUpdate(query,update)
+
+
+    res.send({msg: 'Vacante rechazada'})
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+
 export default jobFunctions;
 //
 // jobFunctions.name =  async (req, res) => {
