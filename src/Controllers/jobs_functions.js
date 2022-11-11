@@ -458,12 +458,13 @@ jobFunctions.delRequest = async (req, res) => {
 //approve Vacant
 jobFunctions.approveVacant =  async (req, res) => {
   try {
-    const { userID, vacantID } = req.body
-    const query = { _id:vacantID};
-    const update = {$set:{applicants:{userID:userID, status:1}}};  
+     const { userID, vacantID } = req.body
+
+ 
+    const query = {_id:vacantID,  'applicants.userID': userID};
+    const update = {$set:{"applicants.$.userID":userID, "applicants.$.status":1}};  
 
     await Vacant.findOneAndUpdate(query,update)
-
 
     res.send({msg: 'Vacante aprobada'})
 
@@ -482,8 +483,8 @@ jobFunctions.denyVacant =  async (req, res) => {
   try {
 
     const { userID, vacantID } = req.body
-    const query = { _id:vacantID};
-    const update = {$set:{applicants:{userID:userID, status:3}}};  
+    const query = { _id:vacantID,'applicants.userID': userID};
+    const update ={$set:{"applicants.$.userID":userID, "applicants.$.status":3}};  ;  
 
     await Vacant.findOneAndUpdate(query,update)
 

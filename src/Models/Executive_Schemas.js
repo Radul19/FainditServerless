@@ -36,8 +36,8 @@ const VacantSchema = new Schema({
   description: { type: String, required: true },
   requiriments: { type: String, required: true },
   applicants: [{
-    userID: { type: String, required: false },
-    cvID: { type: String, required: false },
+    userID: { type: String, required: true },
+    cvID: { type: String, required: true },
     status: { type: Number, required: true, default: 2 }
   }],
 }, {
