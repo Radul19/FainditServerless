@@ -8,7 +8,7 @@ const ExecutiveSchema = new Schema({
   description: { type: String, required: false },
   catalogue: { type: Array, required: false },
   ownerID: { type: String, required: true },
-  admins: { type: Array, required: false },
+  zzz: { type: Array, required: false },
   categories: { type: Array, required: false },
   social: { type: Object, required: true },
   stadistics: { type: Object, required: false },

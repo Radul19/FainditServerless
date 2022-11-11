@@ -28,8 +28,17 @@ const denunciateSchema = new Schema({
 })
 
 
+const denunciatesVacantSchema = new Schema({
+  vacantID: { type: String, required: true },
+  type: { type: Number, required: true },
+  description: { type: String, required: true }
+}, {
+  timestamps: true
+})
+
 //Schema for find by
 export const userIdSchema = new Schema({ _id: ObjectId }, { versionKey: false });
 export const userIdS = model('userIdS', userIdSchema)
 export const FM_Item = model('FM_Item', FM_ItemSchema)
 export const denunciate = model('denunciate', denunciateSchema)
+export const denunciatesVacant = model('denunciatesVacant', denunciatesVacantSchema)

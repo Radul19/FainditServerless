@@ -2,6 +2,7 @@ import { GetBucketAnalyticsConfigurationCommand } from "@aws-sdk/client-s3";
 import { User } from "../Models/Users_Schemas";
 import mongoose from 'mongoose'
 import { Executive, Vacant } from "@/Models/Executive_Schemas";
+import { denunciatesVacant } from '../Models/FM_Schemas';
 const jobFunctions = {};
 
 ///////////////////////////////////////
@@ -458,6 +459,79 @@ jobFunctions.delRequest = async (req, res) => {
     })
   }
 }
+
+
+//approve Vacant
+jobFunctions.approveVacant =  async (req, res) => {
+  try {
+     const { userID, vacantID } = req.body
+
+ 
+    const query = {_id:vacantID,  'applicants.userID': userID};
+    const update = {$set:{"applicants.$.userID":userID, "applicants.$.status":1}};  
+
+    await Vacant.findOneAndUpdate(query,update)
+
+    res.send({msg: 'Vacante aprobada'})
+
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+
+//deny Vacant
+jobFunctions.denyVacant =  async (req, res) => {
+  try {
+
+    const { userID, vacantID } = req.body
+    const query = { _id:vacantID,'applicants.userID': userID};
+    const update ={$set:{"applicants.$.userID":userID, "applicants.$.status":3}};  ;  
+
+    await Vacant.findOneAndUpdate(query,update)
+
+
+    res.send({msg: 'Vacante rechazada'})
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//report Vacant
+jobFunctions.reportVacant =  async (req, res) => {
+    try {
+      const { type, vacantID, description } = req.body
+      const denunciates = new denunciatesVacant({
+        type: type,
+        vacantID: vacantID,
+        description: description
+      });
+  
+      await denunciates.save()
+  
+  
+      res.status(200).json({
+        msg: 'Vacante reportado con exito'
+      })
+  
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({
+        msg: 'Error inesperado'
+      })
+    }
+  }
+
+
+
 
 export default jobFunctions;
 //
