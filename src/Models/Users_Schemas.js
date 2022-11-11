@@ -1,3 +1,5 @@
+import getSignedURL from "@/helpers/getSignedURL";
+
 const { Schema, model } = require("mongoose");
 
 const UserSchema = new Schema(
@@ -62,6 +64,16 @@ const UserSchema = new Schema(
     timestamps: true,
   }
 );
+
+UserSchema.methods.changeName = function () {
+  // console.log(`Testing name here ${this.name}`)
+  return this.name = 'Testing here'
+}
+UserSchema.methods.presignedProfile = async function () {
+  // console.log(`Testing name here ${this.name}`)
+  this.profile_pic = await getSignedURL(this.profile_pic)
+  return this
+}
 
 export const User = model("User", UserSchema);
 

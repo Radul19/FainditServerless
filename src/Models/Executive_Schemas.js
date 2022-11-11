@@ -1,4 +1,7 @@
-const { Schema, model } = require('mongoose')
+import getSignedURL from '@/helpers/getSignedURL'
+
+const { Schema, model, SchemaTypes } = require('mongoose')
+const objId = SchemaTypes.ObjectId
 
 const ExecutiveSchema = new Schema({
   name: { type: String, required: true },
@@ -32,6 +35,7 @@ const VacantSchema = new Schema({
   salary: { type: Number, required: true },
   duration: { type: String, required: true },
   marketID: { type: String, required: true },
+  market: { type: objId, required: true, ref: 'Executive' },
   favorites: { type: Array, required: true },
   description: { type: String, required: true },
   requiriments: { type: String, required: true },
@@ -64,6 +68,13 @@ const ItemSchema = new Schema({
     reply_edited: { type: Boolean, required: true },
   }],
 })
+
+/** VACANTS METHODS */
+VacantSchema.methods.logoAndPhoto = async function () {
+  this.market.logo = await getSignedURL(this.market.logo)
+  this.market.photos[0] = await getSignedURL(this.market.photos[0])
+  return this
+}
 
 
 export const Executive = model('Executive', ExecutiveSchema)

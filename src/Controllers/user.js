@@ -447,18 +447,18 @@ userFunctions.getUserData = async (req, res) => {
 
     const { id } = req.params
 
-    console.log(id)
+    // console.log(id)
 
     const result = await User.findOne({ _id: id })
 
 
-    result.profile_pic = await getSignedURL(result.profile_pic)
+    await result.presignedProfile()
 
     res.send(result)
     // res.send({ ok: true })
 
   } catch (error) {
-    console.log(error)
+    console.log(error.message)
     res.status(500).json({
       msg: 'Error inesperado'
     })

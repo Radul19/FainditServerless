@@ -295,7 +295,11 @@ jobFunctions.deleteCv = async (req, res) => {
 jobFunctions.searchVacant = async (req, res) => {
   try {
 
-    res.send(true)
+    let result = await Vacant.find().populate('market', 'logo photos')
+
+    result = await Promise.all(result.map(item => item.logoAndPhoto()))
+
+    res.send(result)
 
   } catch (error) {
     console.log(error)
@@ -307,7 +311,9 @@ jobFunctions.searchVacant = async (req, res) => {
 jobFunctions.getAllVacants = async (req, res) => {
   try {
 
-    const result = await Vacant.find()
+    let result = await Vacant.find().populate('market', 'logo photos')
+
+    result = await Promise.all(result.map(item => item.logoAndPhoto()))
 
     res.send(result)
 
@@ -440,7 +446,7 @@ jobFunctions.delRequest = async (req, res) => {
       "applicants.$": 1
     }
 
-    const result = await Vacant.findOneAndUpdate({ _id: vacantID,"applicants.userID": userID  },
+    const result = await Vacant.findOneAndUpdate({ _id: vacantID, "applicants.userID": userID },
       { $pull: { applicants: { userID: userID } } },
       { $project: filter, returnNewDocument: true })
     res.send(result)
