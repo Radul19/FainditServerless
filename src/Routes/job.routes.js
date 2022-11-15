@@ -4,7 +4,7 @@ import jobFunctions from "../Controllers/jobs_functions";
 
 const router = Router();
 
-const { getExperience, addStudy, addJobExperience, addLanguage, deleteJobExperience, removeLanguage, deleteStudy, editStudy, editJob, editLanguage, saveCv, editCv, deleteCv, searchVacant, getAllVacants, applyToVacant, vacantAddFav, vacantDelFav, myRequest,delRequest, approveVacant, denyVacant, reportVacant} = jobFunctions;
+const { getExperience, addStudy, addJobExperience, addLanguage, deleteJobExperience, removeLanguage, deleteStudy, editStudy, editJob, editLanguage, saveCv, editCv, deleteCv, searchVacant, getAllVacants, applyToVacant, vacantAddFav, vacantDelFav, myRequest, delRequest, approveVacant, denyVacant, reportVacant, getMyVacants } = jobFunctions;
 
 //// JOBS ROUTES
 
@@ -40,6 +40,8 @@ router.post('/applyToVacant', applyToVacant);
 router.post('/searchVacant', searchVacant);
 // searh all vacants
 router.get('/getAllVacants', getAllVacants);
+// searh my vacants
+router.post('/getMyVacants', getMyVacants);
 
 // vacant to favorites
 router.post('/vacantAddFav', vacantAddFav);

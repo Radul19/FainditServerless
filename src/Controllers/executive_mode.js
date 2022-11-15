@@ -168,10 +168,11 @@ executiveFunctions.myExecutiveModes = async (req, res) => {
   try {
 
     const { name, userID } = req.body
-    const result = await Executive.find({
+    let result = await Executive.find({
       name: name.length > 0 ? new RegExp(name, "i") : { $exists: true },
       $or: [{ admins: userID }, { ownerID: userID }]
     })
+    result = await Promise.all(result.map(item => item.logoAndPhoto()))
 
     res.send(result)
 
@@ -186,9 +187,8 @@ executiveFunctions.myExecutiveModes = async (req, res) => {
 
 executiveFunctions.registerExecutiveMode = async (req, res) => {
   try {
-    
-    const { logo: logoImg, photos: photosArr, ...data } = req.body
 
+    const { logo: logoImg, photos: photosArr, ...data } = req.body
 
     //// THIS NEED TO BE BETTER ---TOFIX
     const logo = uuidv4()
@@ -201,7 +201,10 @@ executiveFunctions.registerExecutiveMode = async (req, res) => {
 
     res.send(newExecutive)
 
-    // res.send(true)
+    // /** */
+    // res.status(500).json({
+    //   msg: 'Error inesperado'
+    // })
 
   } catch (error) {
     console.log(error)
@@ -215,10 +218,10 @@ executiveFunctions.addItem = async (req, res) => {
 
     const { ...data } = req.body
 
-     if (data.images) {
+    if (data.images) {
       const { fileNames } = await uploadMultipleImages(data.images)
       data.images = fileNames
-    } 
+    }
 
     const newItem = new Item(data)
     await newItem.save()
@@ -285,12 +288,12 @@ executiveFunctions.addComment = async (req, res) => {
     const { itemID, userID, comment, stars } = req.body
 
     const dateNow = new Date()
-    const query = {_id:itemID};
-    const update = {$set:{ reviews:[{comment: comment,stars: stars, userID: userID, date: dateNow.toISOString(),edited: false }]}};  
-   await Item.findOneAndUpdate(query,update)
+    const query = { _id: itemID };
+    const update = { $set: { reviews: [{ comment: comment, stars: stars, userID: userID, date: dateNow.toISOString(), edited: false }] } };
+    await Item.findOneAndUpdate(query, update)
 
 
-    res.send({msg: 'Agregado comentario con éxito '})
+    res.send({ msg: 'Agregado comentario con éxito ' })
 
 
   } catch (error) {
@@ -306,13 +309,13 @@ executiveFunctions.addComment = async (req, res) => {
 executiveFunctions.addReply = async (req, res) => {
   try {
     const { itemID, commentID, reply } = req.body
-    const dateNow = new Date()    
-    const query = {_id:itemID,  'reviews._id': commentID};
-    const update = {$set:{"reviews.$.reply": reply,"reviews.$.reply_date":dateNow.toISOString(), "reviews.$.reply_edited": true }};  
+    const dateNow = new Date()
+    const query = { _id: itemID, 'reviews._id': commentID };
+    const update = { $set: { "reviews.$.reply": reply, "reviews.$.reply_date": dateNow.toISOString(), "reviews.$.reply_edited": true } };
 
-    await Item.findOneAndUpdate(query,update)
+    await Item.findOneAndUpdate(query, update)
 
-    res.send({msg: 'Agregado respuesta con éxito'})
+    res.send({ msg: 'Agregado respuesta con éxito' })
 
   } catch (error) {
     console.log(error)
@@ -325,14 +328,14 @@ executiveFunctions.addReply = async (req, res) => {
 //edit Comment
 executiveFunctions.editComment = async (req, res) => {
   try {
-    const { itemID, userID ,comentID , comment, stars } = req.body
+    const { itemID, userID, comentID, comment, stars } = req.body
 
-    const query = {_id:itemID,  'reviews._id': comentID};
-    const update = {$set:{"reviews.$.comment": comment,"reviews.$.stars":stars, "reviews.$.edited": true }};  
+    const query = { _id: itemID, 'reviews._id': comentID };
+    const update = { $set: { "reviews.$.comment": comment, "reviews.$.stars": stars, "reviews.$.edited": true } };
 
-    await Item.findOneAndUpdate(query,update)
+    await Item.findOneAndUpdate(query, update)
 
-    res.send({msg: 'Comentario actualizado con éxito'})
+    res.send({ msg: 'Comentario actualizado con éxito' })
 
   } catch (error) {
     console.log(error)
@@ -350,12 +353,12 @@ executiveFunctions.editReply = async (req, res) => {
 
 
 
-    const query = {_id:itemID,  'reviews._id': commentID};
-    const update = {$set:{"reviews.$.reply": reply }};  
+    const query = { _id: itemID, 'reviews._id': commentID };
+    const update = { $set: { "reviews.$.reply": reply } };
 
-    await Item.findOneAndUpdate(query,update)
+    await Item.findOneAndUpdate(query, update)
 
-    res.send({msg: 'Respuesta actualizado con éxito'})
+    res.send({ msg: 'Respuesta actualizado con éxito' })
 
   } catch (error) {
     console.log(error)
@@ -370,12 +373,12 @@ executiveFunctions.deleteComment = async (req, res) => {
   try {
     const { itemID, userID, commentID } = req.body
 
-    const query = {_id:itemID};
-    const update = {$pull:{ 'reviews':{'_id': commentID}}};  
+    const query = { _id: itemID };
+    const update = { $pull: { 'reviews': { '_id': commentID } } };
 
-    await Item.findOneAndUpdate(query,update)
+    await Item.findOneAndUpdate(query, update)
 
-    res.send({msg: 'Comentario Eliminado con éxito'})
+    res.send({ msg: 'Comentario Eliminado con éxito' })
 
   } catch (error) {
     console.log(error)
@@ -392,13 +395,13 @@ executiveFunctions.deleteReply = async (req, res) => {
 
     const { itemID, userID, commentID } = req.body
 
-    const query = { _id:itemID,'reviews._id': commentID};
-    const update = {$unset:{'reviews.$.reply': 1, "reviews.$.reply_date": 1, 'reviews.$.reply_edited': 1}};  
+    const query = { _id: itemID, 'reviews._id': commentID };
+    const update = { $unset: { 'reviews.$.reply': 1, "reviews.$.reply_date": 1, 'reviews.$.reply_edited': 1 } };
 
-    await Item.findOneAndUpdate(query,update)
+    await Item.findOneAndUpdate(query, update)
 
 
-    res.send({msg: 'Respuesta Eliminado con éxito'})
+    res.send({ msg: 'Respuesta Eliminado con éxito' })
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -413,12 +416,12 @@ executiveFunctions.addComment = async (req, res) => {
     const { itemID, userID, comment, stars } = req.body
 
     const dateNow = new Date()
-    const query = {_id:itemID};
-    const update = {$set:{ reviews:[{comment: comment,stars: stars, userID: userID, date: dateNow.toISOString(),edited: false }]}};  
-   await Item.findOneAndUpdate(query,update)
+    const query = { _id: itemID };
+    const update = { $set: { reviews: [{ comment: comment, stars: stars, userID: userID, date: dateNow.toISOString(), edited: false }] } };
+    await Item.findOneAndUpdate(query, update)
 
 
-    res.send({msg: 'Agregado comentario con éxito '})
+    res.send({ msg: 'Agregado comentario con éxito ' })
 
 
   } catch (error) {
@@ -434,13 +437,13 @@ executiveFunctions.addComment = async (req, res) => {
 executiveFunctions.addReply = async (req, res) => {
   try {
     const { itemID, commentID, reply } = req.body
-    const dateNow = new Date()    
-    const query = {_id:itemID,  'reviews._id': commentID};
-    const update = {$set:{"reviews.$.reply": reply,"reviews.$.reply_date":dateNow.toISOString(), "reviews.$.reply_edited": true }};  
+    const dateNow = new Date()
+    const query = { _id: itemID, 'reviews._id': commentID };
+    const update = { $set: { "reviews.$.reply": reply, "reviews.$.reply_date": dateNow.toISOString(), "reviews.$.reply_edited": true } };
 
-    await Item.findOneAndUpdate(query,update)
+    await Item.findOneAndUpdate(query, update)
 
-    res.send({msg: 'Agregado respuesta con éxito'})
+    res.send({ msg: 'Agregado respuesta con éxito' })
 
   } catch (error) {
     console.log(error)
@@ -453,14 +456,14 @@ executiveFunctions.addReply = async (req, res) => {
 //edit Comment
 executiveFunctions.editComment = async (req, res) => {
   try {
-    const { itemID, userID ,comentID , comment, stars } = req.body
+    const { itemID, userID, comentID, comment, stars } = req.body
 
-    const query = {_id:itemID,  'reviews._id': comentID};
-    const update = {$set:{"reviews.$.comment": comment,"reviews.$.stars":stars, "reviews.$.edited": true }};  
+    const query = { _id: itemID, 'reviews._id': comentID };
+    const update = { $set: { "reviews.$.comment": comment, "reviews.$.stars": stars, "reviews.$.edited": true } };
 
-    await Item.findOneAndUpdate(query,update)
+    await Item.findOneAndUpdate(query, update)
 
-    res.send({msg: 'Comentario actualizado con éxito'})
+    res.send({ msg: 'Comentario actualizado con éxito' })
 
   } catch (error) {
     console.log(error)
@@ -478,12 +481,12 @@ executiveFunctions.editReply = async (req, res) => {
 
 
 
-    const query = {_id:itemID,  'reviews._id': commentID};
-    const update = {$set:{"reviews.$.reply": reply }};  
+    const query = { _id: itemID, 'reviews._id': commentID };
+    const update = { $set: { "reviews.$.reply": reply } };
 
-    await Item.findOneAndUpdate(query,update)
+    await Item.findOneAndUpdate(query, update)
 
-    res.send({msg: 'Respuesta actualizado con éxito'})
+    res.send({ msg: 'Respuesta actualizado con éxito' })
 
   } catch (error) {
     console.log(error)
@@ -498,12 +501,12 @@ executiveFunctions.deleteComment = async (req, res) => {
   try {
     const { itemID, userID, commentID } = req.body
 
-    const query = {_id:itemID};
-    const update = {$pull:{ 'reviews':{'_id': commentID}}};  
+    const query = { _id: itemID };
+    const update = { $pull: { 'reviews': { '_id': commentID } } };
 
-    await Item.findOneAndUpdate(query,update)
+    await Item.findOneAndUpdate(query, update)
 
-    res.send({msg: 'Comentario Eliminado con éxito'})
+    res.send({ msg: 'Comentario Eliminado con éxito' })
 
   } catch (error) {
     console.log(error)
@@ -520,13 +523,13 @@ executiveFunctions.deleteReply = async (req, res) => {
 
     const { itemID, userID, commentID } = req.body
 
-    const query = { _id:itemID,'reviews._id': commentID};
-    const update = {$unset:{'reviews.$.reply': 1, "reviews.$.reply_date": 1, 'reviews.$.reply_edited': 1}};  
+    const query = { _id: itemID, 'reviews._id': commentID };
+    const update = { $unset: { 'reviews.$.reply': 1, "reviews.$.reply_date": 1, 'reviews.$.reply_edited': 1 } };
 
-    await Item.findOneAndUpdate(query,update)
+    await Item.findOneAndUpdate(query, update)
 
 
-    res.send({msg: 'Respuesta Eliminado con éxito'})
+    res.send({ msg: 'Respuesta Eliminado con éxito' })
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -535,18 +538,26 @@ executiveFunctions.deleteReply = async (req, res) => {
   }
 }
 
-//Add Executive Admin
+//Add Executive Admin ----TO UPDATE
 executiveFunctions.addExecutiveAdmin = async (req, res) => {
   try {
-    const { executiveID, userID } = req.body
+    const { executiveID, email } = req.body
 
-    const query = { _id:executiveID};
-    const update = {$push:{'admins': userID}};  
+    // TO UPDATE ----FIX TWO QUERYS
+    let user = await User.findOne({ email: email })
+    if (user) {
+      const query = { _id: executiveID };
+      const update = { $push: { 'admins': user._id } };
+      await Executive.findOneAndUpdate(query, update)
+      res.send({ msg: 'Agregado Nuevo Admin con Exito' })
+    } else {
+      res.status(404).json({
+        msg: 'No se encontro usuario con el correo ingresado'
+      })
+    }
 
-    await Executive.findOneAndUpdate(query,update)
 
 
-    res.send({msg: 'Agregado Nuevo Admin con Exito'})
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -562,13 +573,36 @@ executiveFunctions.deleteExecutiveAdmin = async (req, res) => {
 
     const { executiveID, userID } = req.body
 
-    const query = { _id:executiveID};
-    const update = {$pull:{admins:userID}};  
+    const query = { _id: executiveID };
+    const update = { $pull: { admins: userID } };
 
-    await Executive.findOneAndUpdate(query,update)
+    await Executive.findOneAndUpdate(query, update)
 
 
-    res.send({msg: 'Eliminado con Exito Administrador'})
+    res.send({ msg: 'Eliminado con Exito Administrador' })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+executiveFunctions.getAdmins = async (req, res) => {
+  try {
+
+    const { executiveID } = req.body
+    let result = await Executive.findOne({ _id: executiveID }).populate('admins')
+    if (result) {
+      await Promise.all(result.admins.map(user => user.presignedProfile()))
+      res.send(result)
+    } else {
+      res.status(404).json({
+        msg: 'Comercio no econtrado'
+      })
+    }
+
+
   } catch (error) {
     console.log(error)
     res.status(500).json({

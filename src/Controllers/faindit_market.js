@@ -248,7 +248,7 @@ fmFunctions.findFmiItem = async (req, res) => {
       "place.country": place.country ? place.country : { $exists: true },
       "place.state": place.state ? place.state : { $exists: true },
       "place.city": place.city ? place.city : { $exists: true },
-      categories: categories ? { $in: categories } : { $exists: true },
+      categories: categories ? { $all: categories } : { $exists: true },
     }
 
     /// TO UPDATE SEARCH JUST IN CASE

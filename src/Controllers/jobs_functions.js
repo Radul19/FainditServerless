@@ -295,8 +295,18 @@ jobFunctions.deleteCv = async (req, res) => {
 ////////////////////////////////////////
 jobFunctions.searchVacant = async (req, res) => {
   try {
+    console.log(req.body)
+    const { name = false, place = {}, price_min = false, price_max = false, } = req.body
 
-    let result = await Vacant.find().populate('market', 'logo photos')
+    const query = {
+      $or: [{ name: name ? new RegExp(name, "i") : { $exists: true } }, { description: name ? new RegExp(name, "i") : { $exists: true }, }],
+      salary: { $gte: price_min ? price_min : 0, $lte: price_max ? price_max : 99999 },
+      "place.country": place.country ? place.country : { $exists: true },
+      "place.state": place.state ? place.state : { $exists: true },
+      "place.city": place.city ? place.city : { $exists: true },
+      // categories: categories ? { $all: categories } : { $exists: true },
+    }
+    let result = await Vacant.find(query).populate('market', 'logo photos')
 
     result = await Promise.all(result.map(item => item.logoAndPhoto()))
 
@@ -315,6 +325,24 @@ jobFunctions.getAllVacants = async (req, res) => {
     let result = await Vacant.find().populate('market', 'logo photos')
 
     result = await Promise.all(result.map(item => item.logoAndPhoto()))
+
+    res.send(result)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+jobFunctions.getMyVacants = async (req, res) => {
+  try {
+    const {marketID} = req.body 
+    console.log(marketID)
+
+    let result = await Vacant.find({marketID})
+
+    // result = await Promise.all(result.map(item => item.logo()))
 
     res.send(result)
 
@@ -462,17 +490,17 @@ jobFunctions.delRequest = async (req, res) => {
 
 
 //approve Vacant
-jobFunctions.approveVacant =  async (req, res) => {
+jobFunctions.approveVacant = async (req, res) => {
   try {
-     const { userID, vacantID } = req.body
+    const { userID, vacantID } = req.body
 
- 
-    const query = {_id:vacantID,  'applicants.userID': userID};
-    const update = {$set:{"applicants.$.userID":userID, "applicants.$.status":1}};  
 
-    await Vacant.findOneAndUpdate(query,update)
+    const query = { _id: vacantID, 'applicants.userID': userID };
+    const update = { $set: { "applicants.$.userID": userID, "applicants.$.status": 1 } };
 
-    res.send({msg: 'Vacante aprobada'})
+    await Vacant.findOneAndUpdate(query, update)
+
+    res.send({ msg: 'Vacante aprobada' })
 
 
   } catch (error) {
@@ -485,17 +513,17 @@ jobFunctions.approveVacant =  async (req, res) => {
 
 
 //deny Vacant
-jobFunctions.denyVacant =  async (req, res) => {
+jobFunctions.denyVacant = async (req, res) => {
   try {
 
     const { userID, vacantID } = req.body
-    const query = { _id:vacantID,'applicants.userID': userID};
-    const update ={$set:{"applicants.$.userID":userID, "applicants.$.status":3}};  ;  
+    const query = { _id: vacantID, 'applicants.userID': userID };
+    const update = { $set: { "applicants.$.userID": userID, "applicants.$.status": 3 } };;
 
-    await Vacant.findOneAndUpdate(query,update)
+    await Vacant.findOneAndUpdate(query, update)
 
 
-    res.send({msg: 'Vacante rechazada'})
+    res.send({ msg: 'Vacante rechazada' })
 
   } catch (error) {
     console.log(error)
@@ -506,29 +534,29 @@ jobFunctions.denyVacant =  async (req, res) => {
 }
 
 //report Vacant
-jobFunctions.reportVacant =  async (req, res) => {
-    try {
-      const { type, vacantID, description } = req.body
-      const denunciates = new denunciatesVacant({
-        type: type,
-        vacantID: vacantID,
-        description: description
-      });
-  
-      await denunciates.save()
-  
-  
-      res.status(200).json({
-        msg: 'Vacante reportado con exito'
-      })
-  
-    } catch (error) {
-      console.log(error)
-      res.status(500).json({
-        msg: 'Error inesperado'
-      })
-    }
+jobFunctions.reportVacant = async (req, res) => {
+  try {
+    const { type, vacantID, description } = req.body
+    const denunciates = new denunciatesVacant({
+      type: type,
+      vacantID: vacantID,
+      description: description
+    });
+
+    await denunciates.save()
+
+
+    res.status(200).json({
+      msg: 'Vacante reportado con exito'
+    })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
   }
+}
 
 
 

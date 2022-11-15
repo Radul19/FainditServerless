@@ -6,9 +6,9 @@ const objId = SchemaTypes.ObjectId
 const ExecutiveSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String, required: false },
-  catalogue: { type: Array, required: false },
+  catalogue: { type: Array, required: true, default: [] },
   ownerID: { type: String, required: true },
-  zzz: { type: Array, required: false },
+  admins: { type: [objId], required: false, ref: 'User' },
   categories: { type: Array, required: false },
   social: { type: Object, required: true },
   stadistics: { type: Object, required: false },
@@ -19,9 +19,9 @@ const ExecutiveSchema = new Schema({
   photos: { type: Array, required: false },
   logo: { type: String, required: false },
   membership: { type: Boolean, required: false },
-  promotions: { type: Array, required: true },
+  promotions: { type: Array, required: true,default:[] },
   rif: { type: String, required: true },
-  relation: { type: String, required: false },
+  relation: { type: String, required: true, default: 'Owner' },
   sub_categories: { type: Array, required: false },
   place: { type: Object, required: false },
 
@@ -69,10 +69,24 @@ const ItemSchema = new Schema({
   }],
 })
 
+/** EXECUTIVE METHODS */
+ExecutiveSchema.methods.getLogo = async function () {
+  this.logo = await getSignedURL(this.logo)
+  return this
+}
+ExecutiveSchema.methods.logoAndPhoto = async function () {
+  this.logo = await getSignedURL(this.logo)
+  this.photos[0] = await getSignedURL(this.photos[0])
+  return this
+}
 /** VACANTS METHODS */
 VacantSchema.methods.logoAndPhoto = async function () {
   this.market.logo = await getSignedURL(this.market.logo)
   this.market.photos[0] = await getSignedURL(this.market.photos[0])
+  return this
+}
+VacantSchema.methods.getLogo = async function () {
+  this.market.logo = await getSignedURL(this.market.logo)
   return this
 }
 
