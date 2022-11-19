@@ -24,6 +24,7 @@ const ExecutiveSchema = new Schema({
   relation: { type: String, required: true, default: 'Owner' },
   sub_categories: { type: Array, required: false },
   place: { type: Object, required: false },
+  favorites: { type: Array,required: true, default: []  }
 
 
 }, {
@@ -69,6 +70,14 @@ const ItemSchema = new Schema({
   }],
 })
 
+const TicketSchema = new Schema({ 
+    marketID: { type: String, required: true },
+    relationPhoto: { type: String, required: true },
+    status: { type: Number, required: true, default: 2 }
+}, {
+  timestamps: true
+})
+
 /** EXECUTIVE METHODS */
 ExecutiveSchema.methods.getLogo = async function () {
   this.logo = await getSignedURL(this.logo)
@@ -94,4 +103,4 @@ VacantSchema.methods.getLogo = async function () {
 export const Executive = model('Executive', ExecutiveSchema)
 export const Vacant = model('Vacant', VacantSchema)
 export const Item = model('Item', ItemSchema)
-
+export const Ticket = model('Ticket', TicketSchema)

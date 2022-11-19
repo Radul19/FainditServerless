@@ -59,4 +59,5 @@ router.post('/denyVacant', denyVacant);
 //report Vacant
 router.post('/reportVacant', reportVacant);
 
+
 export default router
