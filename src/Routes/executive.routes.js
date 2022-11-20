@@ -4,7 +4,7 @@ import executiveFunctions from "../Controllers/executive_mode";
 
 const router = Router();
 
-const { createMarket, getAllMarkets, getMarket, addVacant, deleteVacant, myExecutiveModes, registerExecutiveMode, addItem, editItem, deleteItem, addComment, addReply, editComment, editReply, deleteComment, deleteReply, addExecutiveAdmin, deleteExecutiveAdmin, getAdmins } = executiveFunctions;
+const { createMarket, getAllMarkets, getMarket, addVacant, deleteVacant, myExecutiveModes, registerExecutiveMode, addItem, editItem, deleteItem, addComment, addReply, editComment, editReply, deleteComment, deleteReply, addExecutiveAdmin, deleteExecutiveAdmin, getAdmins, editExecutiveMode, addMarketFav, myMarketsFav, verifyExecutiveMode, approveExecutive, denyExecutive } = executiveFunctions;
 
 //// MARKET ROUTES
 router.post("/createMarket", createMarket);
@@ -43,7 +43,17 @@ router.post("/addExecutiveAdmin", addExecutiveAdmin);
 router.post("/deleteExecutiveAdmin", deleteExecutiveAdmin);
 // get my admins
 router.post("/getAdmins", getAdmins);
-
-
+// edit Executive Mode
+router.post("/editExecutiveMode", editExecutiveMode);
+// add Market Fav
+router.post("/addMarketFav", addMarketFav);
+// my Markets Fav
+router.get("/myMarketsFav/:id", myMarketsFav);
+// verify Executive Mode
+router.post("/verifyExecutiveMode", verifyExecutiveMode);
+// approve Executive
+router.post("/approveExecutive", approveExecutive);
+//deny Executive
+router.post("/denyExecutive", denyExecutive);
 
 export default router
