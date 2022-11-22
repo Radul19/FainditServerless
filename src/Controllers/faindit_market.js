@@ -240,8 +240,6 @@ fmFunctions.findFmiItem = async (req, res) => {
     /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
     const { title = false, place = false, price_min = false, price_max = false, categories = false, stars = false } = req.body;
 
-    // console.log(req.body)
-
     const query = {
       price: { $gte: price_min ? price_min : 0, $lte: price_max ? price_max : 99999 },
       title: title ? new RegExp(title, "i") : { $exists: true },

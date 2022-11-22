@@ -306,7 +306,7 @@ jobFunctions.searchVacant = async (req, res) => {
       "place.city": place.city ? place.city : { $exists: true },
       // categories: categories ? { $all: categories } : { $exists: true },
     }
-    let result = await Vacant.find(query).populate('market', 'logo photos')
+    let result = await Vacant.find(query).populate('market', 'logo photos name')
 
     result = await Promise.all(result.map(item => item.logoAndPhoto()))
 

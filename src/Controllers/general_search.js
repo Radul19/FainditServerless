@@ -5,6 +5,7 @@ import getMultipleImages from '@/helpers/getMultipleImages';
 import { FM_Item } from '../Models/FM_Schemas';
 import { WordArray } from 'amazon-cognito-identity-js';
 import getPlace from '../helpers/getPlace'
+import { Executive, Item } from '../Models/Executive_Schemas';
 
 
 const searchFunctions = {};
@@ -81,12 +82,68 @@ searchFunctions.applySearch = async (req, res) => {
 searchFunctions.getLocation = async (req, res) => {
   try {
 
-    const {lat,lon} = req.body
+    const { lat, lon } = req.body
     // console.log(lat,lon)
 
-    const {state,city,country} = await getPlace([lon,lat])
+    const { state, city, country } = await getPlace([lon, lat])
 
-    res.send({state,city,country})
+    res.send({ state, city, country })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+searchFunctions.searchItem = async (req, res) => {
+  try {
+    const { name = false, place = false, price_min = false, price_max = false, categories = false, stars = false } = req.body;
+
+    const query = {
+      $or: [{ name: name ? new RegExp(name, "i") : { $exists: true } }, { description: name ? new RegExp(name, "i") : { $exists: true }, }],
+      price: { $gte: price_min ? price_min : 0, $lte: price_max ? price_max : 99999 },
+      "place.country": place.country ? place.country : { $exists: true },
+      "place.state": place.state ? place.state : { $exists: true },
+      "place.city": place.city ? place.city : { $exists: true },
+      categories: categories ? { $all: categories } : { $exists: true },
+    }
+
+    let result = await Item.find(query)
+
+    if (result) {
+      result = await Promise.all(result.map(item => item.getImages()))
+    }
+
+    res.send(result)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+searchFunctions.searchMarket = async (req, res) => {
+  try {
+    const { name = false, place = false, categories = false, stars = false, marketVerify = false } = req.body;
+
+    const query = {
+      $or: [{ name: name ? new RegExp(name, "i") : { $exists: true } }, { description: name ? new RegExp(name, "i") : { $exists: true }, }],
+      "place.country": place.country ? place.country : { $exists: true },
+      "place.state": place.state ? place.state : { $exists: true },
+      "place.city": place.city ? place.city : { $exists: true },
+      categories: categories ? { $all: categories } : { $exists: true },
+      // membership: marketVerify ? marketVerify : { $exists: true }
+    }
+
+    let result = await Executive.find(query)
+
+    if (result) {
+      result = await Promise.all(result.map(item => item.logoAndPhoto()))
+    }
+
+    res.send(result)
 
   } catch (error) {
     console.log(error)

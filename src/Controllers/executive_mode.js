@@ -281,6 +281,28 @@ executiveFunctions.deleteItem = async (req, res) => {
     })
   }
 }
+executiveFunctions.myItems = async (req, res) => {
+  try {
+
+    const { id } = req.params
+    console.log(id)
+
+    let result = await Item.find({ marketID: id })
+
+    if (result) {
+      result = await Promise.all(result.map(item => item.getImages()))
+    }
+
+    res.send(result)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+// MY ITEMS
 
 //add Comment
 executiveFunctions.addComment = async (req, res) => {
@@ -603,6 +625,163 @@ executiveFunctions.getAdmins = async (req, res) => {
     }
 
 
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+// update Sections
+executiveFunctions.updateSections = async (req, res) => {
+  try {
+
+    const { marketID, sections } = req.body
+
+
+    const result = await Executive.findOneAndUpdate({ _id: marketID },
+      { sub_categories: sections },
+      { new: true })
+
+    res.send(result)
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//Edit ExecutiveMode
+executiveFunctions.editExecutiveMode = async (req, res) => {
+  try {
+    const {id, name, description, categories , catalogue , social , schedule , delivery , address, logo, photos, rif, place } = req.body
+
+
+
+     const query = { _id: id};
+    const update = { $set: { "name": name,"description": description, "categories":categories, "catalogue":catalogue,"social":social, "schedule":schedule,"delivery":delivery,"address":address,"logo":logo,"rif":rif, "place":place } }; 
+
+    await Executive.findOneAndUpdate(query, update) 
+
+    res.send([id,name, description, categories , catalogue , social , schedule , delivery , address, logo, photos, rif, place])
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//add Favorites
+executiveFunctions.addMarketFav = async (req, res) => {
+  try {
+   const {  userID , marketID } = req.body
+    const findUser = await Executive.findById(marketID);
+    let favourite = findUser.favorites;
+
+    if (favourite == undefined) {
+      await Executive.updateOne({ _id: marketID }, { $set: { favorites: userID } });
+      res.json({
+        msg: "articulo guardado en favoritos",
+      });
+    } else {
+      if (favourite.indexOf(userID) === -1) {
+        favourite.push(userID);
+        await Executive.updateOne({ _id: marketID }, { $set: { favorites: favourite } });
+        res.json({
+          msg: "articulo guardado en favoritos",
+        });
+      } else {
+        favourite.splice(favourite.indexOf(userID), 1);
+        await Executive.updateOne({ _id: marketID }, { $set: { favorites: favourite } });
+        res.json({
+          msg: "Articulo removido de tu lista de favoritos",
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//my Markets Fav
+executiveFunctions.myMarketsFav = async (req, res) => {
+  try {
+
+    const { id } = req.params
+    const query = {"favorites":id};
+
+    const result = await Executive.find(query)
+  
+
+     if (result !== null) {
+      res.send({
+        result
+      })
+    } else {
+      res.status(404).json({
+        msg: 'No hay ningun comercio agregado a favorito'
+      })
+    } 
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//verify Executive Mode
+executiveFunctions.verifyExecutiveMode = async (req, res) => {
+  try {
+const { marketID, relationPhoto } = req.body
+const data = new Ticket({"marketID":marketID,"relationPhoto":relationPhoto});
+await data.save();
+
+res.json({ msg:"Enviada con éxito foto para ser verificada "})
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//approve Executive
+executiveFunctions.approveExecutive = async (req, res) => {
+  try {
+    const {id} = req.body
+    const query = { _id: id}
+    const update = {$set: {status: 1 }}
+
+  await Ticket.findOneAndUpdate(query,update)
+
+
+res.json({ msg:'Aprobado con éxito'})
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+//approve Executive
+executiveFunctions.denyExecutive = async (req, res) => {
+  try {
+    const {id} = req.body
+    const query = { _id: id}
+    const update = {$set: {status: 3 }}
+
+  await Ticket.findOneAndUpdate(query,update)
+
+
+res.json({ msg:'Denegado con éxito'})
   } catch (error) {
     console.log(error)
     res.status(500).json({
