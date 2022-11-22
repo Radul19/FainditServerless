@@ -25,6 +25,7 @@ const ExecutiveSchema = new Schema({
   relation: { type: String, required: true, default: 'Owner' },
   sub_categories: { type: Array, required: false },
   place: { type: Object, required: false },
+  favorites: { type: Array,required: true, default: []  }
 
 
 }, {
@@ -143,4 +144,4 @@ export const Executive = model('Executive', ExecutiveSchema)
 export const Vacant = model('Vacant', VacantSchema)
 export const Item = model('Item', ItemSchema)
 export const Promotion = model('Promotion', PromotionSchema)
-
+export const Ticket = model('Ticket', TicketSchema)

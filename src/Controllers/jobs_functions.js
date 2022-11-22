@@ -560,7 +560,6 @@ jobFunctions.reportVacant = async (req, res) => {
 
 
 
-
 export default jobFunctions;
 //
 // jobFunctions.name =  async (req, res) => {
