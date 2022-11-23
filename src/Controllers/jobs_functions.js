@@ -237,7 +237,7 @@ jobFunctions.saveCv = async (req, res) => {
       { $push: { professionalProfiles: cvData } },
       { projection: { professionalProfiles: 1 }, new: true })
 
-    console.log(result)
+    //console.log(result)
 
     res.send({ result, msg: 'Experiencia laboral registrada con exito' })
 
