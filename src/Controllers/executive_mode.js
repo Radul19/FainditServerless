@@ -9,6 +9,7 @@ import { User } from '@/Models/Users_Schemas';
 import { query } from 'express';
 import { title } from 'process';
 
+
 const executiveFunctions = {};
 
 /// DELETE THIS AFTER
@@ -437,15 +438,17 @@ executiveFunctions.deleteReply = async (req, res) => {
 //add Comment
 executiveFunctions.addComment = async (req, res) => {
   try {
-    const { itemID, userID, comment, stars } = req.body
+    const { itemID, ...data } = req.body
 
-    const dateNow = new Date()
-    const query = { _id: itemID };
-    const update = { $set: { reviews: [{ comment: comment, stars: stars, userID: userID, date: dateNow.toISOString(), edited: false }] } };
-    await Item.findOneAndUpdate(query, update)
+    const item = { ...data, date: new Date().toISOString(), edited: false, _id: new mongoose.Types.ObjectId() }
+    const project = {
+      projection: { reviews: 1 },
+      new: true
+    }
+    await Item.findOneAndUpdate({ _id: itemID }, { $push: { reviews: item } }, project)
 
 
-    res.send({ msg: 'Agregado comentario con éxito ' })
+    res.send(item)
 
 
   } catch (error) {
@@ -659,16 +662,16 @@ executiveFunctions.updateSections = async (req, res) => {
 //Edit ExecutiveMode
 executiveFunctions.editExecutiveMode = async (req, res) => {
   try {
-    const {id, name, description, categories , catalogue , social , schedule , delivery , address, logo, photos, rif, place } = req.body
+    const { id, name, description, categories, catalogue, social, schedule, delivery, address, logo, photos, rif, place } = req.body
 
 
 
-     const query = { _id: id};
-    const update = { $set: { "name": name,"description": description, "categories":categories, "catalogue":catalogue,"social":social, "schedule":schedule,"delivery":delivery,"address":address,"logo":logo,"rif":rif, "place":place } }; 
+    const query = { _id: id };
+    const update = { $set: { "name": name, "description": description, "categories": categories, "catalogue": catalogue, "social": social, "schedule": schedule, "delivery": delivery, "address": address, "logo": logo, "rif": rif, "place": place } };
 
-    await Executive.findOneAndUpdate(query, update) 
+    await Executive.findOneAndUpdate(query, update)
 
-    res.send([id,name, description, categories , catalogue , social , schedule , delivery , address, logo, photos, rif, place])
+    res.send([id, name, description, categories, catalogue, social, schedule, delivery, address, logo, photos, rif, place])
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -680,7 +683,7 @@ executiveFunctions.editExecutiveMode = async (req, res) => {
 //add Favorites
 executiveFunctions.addMarketFav = async (req, res) => {
   try {
-   const {  userID , marketID } = req.body
+    const { userID, marketID } = req.body
     const findUser = await Executive.findById(marketID);
     let favourite = findUser.favorites;
 
@@ -717,12 +720,12 @@ executiveFunctions.myMarketsFav = async (req, res) => {
   try {
 
     const { id } = req.params
-    const query = {"favorites":id};
+    const query = { "favorites": id };
 
     const result = await Executive.find(query)
-  
 
-     if (result !== null) {
+
+    if (result !== null) {
       res.send({
         result
       })
@@ -730,7 +733,7 @@ executiveFunctions.myMarketsFav = async (req, res) => {
       res.status(404).json({
         msg: 'No hay ningun comercio agregado a favorito'
       })
-    } 
+    }
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -742,11 +745,11 @@ executiveFunctions.myMarketsFav = async (req, res) => {
 //verify Executive Mode
 executiveFunctions.verifyExecutiveMode = async (req, res) => {
   try {
-const { marketID, relationPhoto } = req.body
-const data = new Ticket({"marketID":marketID,"relationPhoto":relationPhoto});
-await data.save();
+    const { marketID, relationPhoto } = req.body
+    const data = new Ticket({ "marketID": marketID, "relationPhoto": relationPhoto });
+    await data.save();
 
-res.json({ msg:"Enviada con éxito foto para ser verificada "})
+    res.json({ msg: "Enviada con éxito foto para ser verificada " })
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -758,14 +761,14 @@ res.json({ msg:"Enviada con éxito foto para ser verificada "})
 //approve Executive
 executiveFunctions.approveExecutive = async (req, res) => {
   try {
-    const {id} = req.body
-    const query = { _id: id}
-    const update = {$set: {status: 1 }}
+    const { id } = req.body
+    const query = { _id: id }
+    const update = { $set: { status: 1 } }
 
-  await Ticket.findOneAndUpdate(query,update)
+    await Ticket.findOneAndUpdate(query, update)
 
 
-res.json({ msg:'Aprobado con éxito'})
+    res.json({ msg: 'Aprobado con éxito' })
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -776,14 +779,14 @@ res.json({ msg:'Aprobado con éxito'})
 //approve Executive
 executiveFunctions.denyExecutive = async (req, res) => {
   try {
-    const {id} = req.body
-    const query = { _id: id}
-    const update = {$set: {status: 3 }}
+    const { id } = req.body
+    const query = { _id: id }
+    const update = { $set: { status: 3 } }
 
-  await Ticket.findOneAndUpdate(query,update)
+    await Ticket.findOneAndUpdate(query, update)
 
 
-res.json({ msg:'Denegado con éxito'})
+    res.json({ msg: 'Denegado con éxito' })
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -795,16 +798,16 @@ res.json({ msg:'Denegado con éxito'})
 //Edit ExecutiveMode
 executiveFunctions.editExecutiveMode = async (req, res) => {
   try {
-    const {id, name, description, categories , catalogue , social , schedule , delivery , address, logo, photos, rif, place } = req.body
+    const { id, name, description, categories, catalogue, social, schedule, delivery, address, logo, photos, rif, place } = req.body
 
 
 
-     const query = { _id: id};
-    const update = { $set: { "name": name,"description": description, "categories":categories, "catalogue":catalogue,"social":social, "schedule":schedule,"delivery":delivery,"address":address,"logo":logo,"rif":rif, "place":place } }; 
+    const query = { _id: id };
+    const update = { $set: { "name": name, "description": description, "categories": categories, "catalogue": catalogue, "social": social, "schedule": schedule, "delivery": delivery, "address": address, "logo": logo, "rif": rif, "place": place } };
 
-    await Executive.findOneAndUpdate(query, update) 
+    await Executive.findOneAndUpdate(query, update)
 
-    res.send([id,name, description, categories , catalogue , social , schedule , delivery , address, logo, photos, rif, place])
+    res.send([id, name, description, categories, catalogue, social, schedule, delivery, address, logo, photos, rif, place])
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -816,7 +819,7 @@ executiveFunctions.editExecutiveMode = async (req, res) => {
 //add Favorites
 executiveFunctions.addMarketFav = async (req, res) => {
   try {
-   const {  userID , marketID } = req.body
+    const { userID, marketID } = req.body
     const findUser = await Executive.findById(marketID);
     let favourite = findUser.favorites;
 
@@ -853,12 +856,12 @@ executiveFunctions.myMarketsFav = async (req, res) => {
   try {
 
     const { id } = req.params
-    const query = {"favorites":id};
+    const query = { "favorites": id };
 
     const result = await Executive.find(query)
-  
 
-     if (result !== null) {
+
+    if (result !== null) {
       res.send({
         result
       })
@@ -866,7 +869,7 @@ executiveFunctions.myMarketsFav = async (req, res) => {
       res.status(404).json({
         msg: 'No hay ningun comercio agregado a favorito'
       })
-    } 
+    }
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -878,11 +881,11 @@ executiveFunctions.myMarketsFav = async (req, res) => {
 //verify Executive Mode
 executiveFunctions.verifyExecutiveMode = async (req, res) => {
   try {
-const { marketID, relationPhoto } = req.body
-const data = new Ticket({"marketID":marketID,"relationPhoto":relationPhoto});
-await data.save();
+    const { marketID, relationPhoto } = req.body
+    const data = new Ticket({ "marketID": marketID, "relationPhoto": relationPhoto });
+    await data.save();
 
-res.json({ msg:"Enviada con éxito foto para ser verificada "})
+    res.json({ msg: "Enviada con éxito foto para ser verificada " })
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -894,14 +897,14 @@ res.json({ msg:"Enviada con éxito foto para ser verificada "})
 //approve Executive
 executiveFunctions.approveExecutive = async (req, res) => {
   try {
-    const {id} = req.body
-    const query = { _id: id}
-    const update = {$set: {status: 1 }}
+    const { id } = req.body
+    const query = { _id: id }
+    const update = { $set: { status: 1 } }
 
-  await Ticket.findOneAndUpdate(query,update)
+    await Ticket.findOneAndUpdate(query, update)
 
 
-res.json({ msg:'Aprobado con éxito'})
+    res.json({ msg: 'Aprobado con éxito' })
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -912,14 +915,14 @@ res.json({ msg:'Aprobado con éxito'})
 //approve Executive
 executiveFunctions.denyExecutive = async (req, res) => {
   try {
-    const {id} = req.body
-    const query = { _id: id}
-    const update = {$set: {status: 3 }}
+    const { id } = req.body
+    const query = { _id: id }
+    const update = { $set: { status: 3 } }
 
-  await Ticket.findOneAndUpdate(query,update)
+    await Ticket.findOneAndUpdate(query, update)
 
 
-res.json({ msg:'Denegado con éxito'})
+    res.json({ msg: 'Denegado con éxito' })
   } catch (error) {
     console.log(error)
     res.status(500).json({

@@ -36,9 +36,6 @@ const denunciatesVacantSchema = new Schema({
   timestamps: true
 })
 
-//Schema for find by
-export const userIdSchema = new Schema({ _id: ObjectId }, { versionKey: false });
-export const userIdS = model('userIdS', userIdSchema)
 export const FM_Item = model('FM_Item', FM_ItemSchema)
 export const denunciate = model('denunciate', denunciateSchema)
 export const denunciatesVacant = model('denunciatesVacant', denunciatesVacantSchema)
