@@ -1,12 +1,14 @@
 //@ts-check4
 import simpleUploadFile from '@/helpers/simpleUploadFile';
-import { Executive, Vacant, Item, Ticket } from '../Models/Executive_Schemas';
+import { Executive, Vacant, Item, Ticket, Promotion } from '../Models/Executive_Schemas';
 import { v4 as uuidv4 } from 'uuid';
 import uploadFile from '@/helpers/uploadFile';
 import uploadMultipleImages from '@/helpers/uploadMultipleImages';
 import deleteMultipleImages from '@/helpers/deleteMultipleImages';
 import { User } from '@/Models/Users_Schemas';
-import mongoose from 'mongoose';
+import { query } from 'express';
+import { title } from 'process';
+
 
 const executiveFunctions = {};
 
@@ -928,6 +930,164 @@ executiveFunctions.denyExecutive = async (req, res) => {
     })
   }
 }
+
+executiveFunctions.createPromotion = async (req, res) => {
+  try {
+    const {
+      type,
+      info_type,
+      since,
+      until,
+      gender,
+      age_min,
+      age_max,
+      place,
+      images,
+      categories,
+      status,
+      tagetID,
+      title,
+      relation,
+      description,
+      rif,
+      social,
+      address,
+    } = req.body;
+
+    const data = new Promotion({
+      type: type,
+      info_type: info_type,
+      since: since,
+      until: until,
+      gender: gender,
+      age_min: age_min,
+      age_max: age_max,
+      place: place,
+      images: images,
+      categories: categories,
+      status: status,
+      tagetID: tagetID,
+      title: title,
+      relation: relation,
+      description: description,
+      rif: rif,
+      social: social,
+      address: address,
+    });
+    await data.save();
+    res.json({ msg: "Experiencia laboral registrada con exito" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+
+//approve Promotion
+executiveFunctions.approvePromotion = async (req, res) => {
+  try {
+const { promotionID, passed } = req.body;
+
+const query = {_id: promotionID}
+const update = { $set :{ "passed": passed}}
+
+await Promotion.findByIdAndUpdate(query, update)
+
+
+
+res.json({ msg: "Aprobada con éxito promoción" });
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//deny Promotion
+executiveFunctions.denyPromotion = async (req, res) => {
+  try {
+    const { promotionID, passed } = req.body;
+    
+    const query = {_id: promotionID}
+    const update = { $set :{ "passed": passed}}
+    
+    await Promotion.findByIdAndUpdate(query, update)
+    
+    
+    
+    res.json({ msg: "Rechazada con éxito promoción" });
+      } catch (error) {
+        console.log(error)
+        res.status(500).json({
+          msg: 'Error inesperado'
+        })
+      }
+    }
+
+//filters Promotion
+executiveFunctions.filtersPromotion = async (req, res) => {
+    try {
+      /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
+      const { gender = false, age = false, place = false, categories = false} = req.body;
+  
+      const query = {
+        title: title ? new RegExp(title, "i") : { $exists: true },
+        "place.country": place.country ? place.country : { $exists: true },
+        "place.state": place.state ? place.state : { $exists: true },
+        "place.city": place.city ? place.city : { $exists: true },
+        categories: categories ? { $all: categories } : { $exists: true },
+      }
+  
+      /// TO UPDATE SEARCH JUST IN CASE
+  /*     const updatedResult = await FM_Item.updateMany(query, {
+        $inc: { insearch: 1 }
+      });
+   */
+  
+      let result = await Promotion.find(query)
+      // let arrUsers
+  
+      // IF FILTER BY USER STARS
+      // if (stars) {
+  
+      //   let arrId = result.map(item => {
+      //     return mongoose.Types.ObjectId(item.ownerId)
+      //   })
+  
+      //   arrUsers = await User.aggregate([{
+      //     $match: {
+      //       $expr: {
+      //         $gte: [{ $avg: '$stars' }, stars],
+      //       },
+      //       "_id": { "$in": arrId }
+      //     },
+      //   },
+      //   { $group: { _id: "$_id" } }])
+  
+      //   arrUsers.forEach((item, index) => {
+      //     arrUsers[index] = item._id.toString()
+      //   })
+  
+      //   result = result.filter(item => arrUsers.includes(item.ownerId)
+      //     // console.log(arrUsers.some(id => id === item.ownerId))
+      //   )
+  
+      // }
+  
+      //await convertFileNameToUrl(result)
+  
+      res.send(result)
+      // res.send({ ok: true })
+  
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        msg: "Error inesperado",
+      });
+    }
+  } 
 
 export default executiveFunctions
 //

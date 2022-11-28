@@ -31,6 +31,10 @@ const { createMarket,
   verifyExecutiveMode,
   approveExecutive,
   denyExecutive,
+  createPromotion,
+  approvePromotion,
+  denyPromotion,
+  filtersPromotion
 } = executiveFunctions;
 
 //// MARKET ROUTES
@@ -89,5 +93,12 @@ router.post("/verifyExecutiveMode", verifyExecutiveMode);
 router.post("/approveExecutive", approveExecutive);
 //deny Executive
 router.post("/denyExecutive", denyExecutive);
-
+//create Promotion
+router.post('/createPromotion', createPromotion);
+//approve Promotion
+router.post('/approvePromotion', approvePromotion);
+//deny Promotion
+router.post('/denyPromotion', denyPromotion);
+//filters Promotion
+router.post('/filtersPromotion', filtersPromotion);
 export default router
