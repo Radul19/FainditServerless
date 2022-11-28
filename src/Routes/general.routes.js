@@ -9,8 +9,10 @@ const {
   getImages,
   applySearch,
   getLocation,
-  searchItem,
-  searchMarket
+  getItemReviews,
+  searchItems,
+  searchMarket,
+  toggleFavorite
 } = generalFunctions
 
 router.post("/testPromise", promiseTest);
@@ -18,8 +20,12 @@ router.post("/getImages", getImages);
 router.post("/applySearch", applySearch);
 router.post("/getLocation", getLocation);
 
-router.post("/searchItem", searchItem);
+/// search multiple items
+router.post("/searchItems", searchItems);
+/// get item reviews by ID
+router.get("/getItemReviews/:id", getItemReviews);
 router.post("/searchMarket", searchMarket);
+router.post("/toggleFavorite", toggleFavorite);
 
 
 export default router
