@@ -6,8 +6,7 @@ import uploadFile from '@/helpers/uploadFile';
 import uploadMultipleImages from '@/helpers/uploadMultipleImages';
 import deleteMultipleImages from '@/helpers/deleteMultipleImages';
 import { User } from '@/Models/Users_Schemas';
-import { query } from 'express';
-import { title } from 'process';
+
 
 const executiveFunctions = {};
 
@@ -1028,22 +1027,33 @@ executiveFunctions.filtersPromotion = async (req, res) => {
     try {
       /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
       const { gender = false, age = false, place = false, categories = false} = req.body;
-  
-      const query = {
-        title: title ? new RegExp(title, "i") : { $exists: true },
-        "place.country": place.country ? place.country : { $exists: true },
-        "place.state": place.state ? place.state : { $exists: true },
-        "place.city": place.city ? place.city : { $exists: true },
-        categories: categories ? { $all: categories } : { $exists: true },
-      }
-  
+
+
+
+const query = {"age_min":{$lte : age},"age_max":{$gte : age} }
+
+
+const query2 = {
+ // "age_min": { $lte: age ? age : 99999},"age_max": { $gte: age ? age : 0} <== funciona no tocar
+}
+   console.log(query2)
+  /*      const query2 = {
+        age: {$gte: price_min }? price_min : 0, $lte: price_max ? price_max : 99999 },
+        //title: title ? new RegExp(title, "i") : { $exists: true },
+       // "gender": gender ? gender : { $exists: true },
+        //"place.country": place.country ? place.country : { $exists: true },
+        //"place.state": place.state ? place.state : { $exists: true },
+        //"place.city": place.city ? place.city : { $exists: true },
+        //categories: categories ? { $all: categories } : { $exists: true },
+      }  
+      console.log(query2)
       /// TO UPDATE SEARCH JUST IN CASE
   /*     const updatedResult = await FM_Item.updateMany(query, {
         $inc: { insearch: 1 }
       });
    */
   
-      let result = await Promotion.find(query)
+      let result = await Promotion.find(query2)
       // let arrUsers
   
       // IF FILTER BY USER STARS
@@ -1075,7 +1085,7 @@ executiveFunctions.filtersPromotion = async (req, res) => {
   
       //await convertFileNameToUrl(result)
   
-      res.send(result)
+      res.send(result)//result)
       // res.send({ ok: true })
   
     } catch (error) {
