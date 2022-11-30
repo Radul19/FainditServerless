@@ -1024,79 +1024,38 @@ executiveFunctions.denyPromotion = async (req, res) => {
 
 //filters Promotion
 executiveFunctions.filtersPromotion = async (req, res) => {
-    try {
-      /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
-      const { gender = false, age = false, place = false, categories = false} = req.body;
+  try {
+    /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
+    const {
+      gender = false,age = false,place = false,categories = false,} = req.body;
 
+    /*   const categoriesLower = categories.map(element => {
+        return element.toLowerCase();
+      }); */ //<== Guardado por si acaso utilizar despues
 
+    const query =
+      {
+        age_min: { $lte: age ? age : 99999 },
+        age_max: { $gte: age ? age : 0 },
+        gender: gender ? gender : { $exists: true },
+        "place.country": place.country ? place.country : { $exists: true },
+        "place.state": place.state ? place.state : { $exists: true },
+        "place.city": place.city ? place.city : { $exists: true },
+        categories: categories ? { $all: categories } : { $exists: true },
+      }
 
-const query = {"age_min":{$lte : age},"age_max":{$gte : age} }
+    let result = await Promotion.find(query);
 
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
 
-const query2 = {
- // "age_min": { $lte: age ? age : 99999},"age_max": { $gte: age ? age : 0} <== funciona no tocar
-}
-   console.log(query2)
-  /*      const query2 = {
-        age: {$gte: price_min }? price_min : 0, $lte: price_max ? price_max : 99999 },
-        //title: title ? new RegExp(title, "i") : { $exists: true },
-       // "gender": gender ? gender : { $exists: true },
-        //"place.country": place.country ? place.country : { $exists: true },
-        //"place.state": place.state ? place.state : { $exists: true },
-        //"place.city": place.city ? place.city : { $exists: true },
-        //categories: categories ? { $all: categories } : { $exists: true },
-      }  
-      console.log(query2)
-      /// TO UPDATE SEARCH JUST IN CASE
-  /*     const updatedResult = await FM_Item.updateMany(query, {
-        $inc: { insearch: 1 }
-      });
-   */
-  
-      let result = await Promotion.find(query2)
-      // let arrUsers
-  
-      // IF FILTER BY USER STARS
-      // if (stars) {
-  
-      //   let arrId = result.map(item => {
-      //     return mongoose.Types.ObjectId(item.ownerId)
-      //   })
-  
-      //   arrUsers = await User.aggregate([{
-      //     $match: {
-      //       $expr: {
-      //         $gte: [{ $avg: '$stars' }, stars],
-      //       },
-      //       "_id": { "$in": arrId }
-      //     },
-      //   },
-      //   { $group: { _id: "$_id" } }])
-  
-      //   arrUsers.forEach((item, index) => {
-      //     arrUsers[index] = item._id.toString()
-      //   })
-  
-      //   result = result.filter(item => arrUsers.includes(item.ownerId)
-      //     // console.log(arrUsers.some(id => id === item.ownerId))
-      //   )
-  
-      // }
-  
-      //await convertFileNameToUrl(result)
-  
-      res.send(result)//result)
-      // res.send({ ok: true })
-  
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        msg: "Error inesperado",
-      });
-    }
-  } 
-
-export default executiveFunctions
+export default executiveFunctions;
 //
 // executiveFunctions.name = async (req, res) => {
 //   try {
