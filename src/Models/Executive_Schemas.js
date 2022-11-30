@@ -25,7 +25,7 @@ const ExecutiveSchema = new Schema({
   relation: { type: String, required: true, default: 'Owner' },
   sub_categories: { type: Array, required: false },
   place: { type: Object, required: false },
-  favorites: { type: Array,required: true, default: []  }
+  favorites: { type: Array, required: true, default: [] }
 
 
 }, {
@@ -58,10 +58,10 @@ const ItemSchema = new Schema({
   favorites: { type: Array, required: true },
   images: { type: Array, required: true },
   place: { type: Object, required: true },
-  marketID: { type: String, required: true },
+  marketID: { type: objId, required: true, ref: 'Executive' },
   sections: { type: [String], required: true },
   reviews: [{
-    userID: { type: String, required: true },
+    userID: { type: objId, required: true ,ref: 'User' },
     comment: { type: String, required: true },
     stars: { type: Number, required: true },
     date: { type: Date, required: true },
@@ -170,6 +170,7 @@ ItemSchema.methods.getImages = async function () {
   this.images = await getMultipleImages(this.images)
   return this
 }
+
 
 /** VACANTS METHODS */
 VacantSchema.methods.logoAndPhoto = async function () {
