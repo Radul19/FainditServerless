@@ -1027,7 +1027,7 @@ executiveFunctions.filtersPromotion = async (req, res) => {
   try {
     /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
     const {
-      gender = false,age = false,place = false,categories = false,} = req.body;
+gender = false,age = false,place = false,categories = false,} = req.body;
 
     /*   const categoriesLower = categories.map(element => {
         return element.toLowerCase();
