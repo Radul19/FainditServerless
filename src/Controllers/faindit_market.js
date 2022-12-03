@@ -1,4 +1,4 @@
-import { FM_Item, denunciate } from '../Models/FM_Schemas';
+import { FM_Item, denunciate, PromotionFm } from '../Models/FM_Schemas';
 import { User } from '../Models/Users_Schemas';
 import UserPool from '../helpers/UserPool'
 import { CognitoUserAttribute, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
@@ -241,7 +241,7 @@ fmFunctions.findFmiItem = async (req, res) => {
     const { title = false, place = false, price_min = false, price_max = false, categories = false, stars = false } = req.body;
 
     const query = {
-      price: { $gte: price_min ? price_min : 0, $lte: price_max ? price_max : 99999 },
+      price: { $gte: price_min ? price_min : 0,$lte: price_max ? price_max : 99999 },
       title: title ? new RegExp(title, "i") : { $exists: true },
       "place.country": place.country ? place.country : { $exists: true },
       "place.state": place.state ? place.state : { $exists: true },
@@ -410,7 +410,7 @@ fmFunctions.createAnArticle = async (req, res) => {
 };
 
 
-//remove Item Fm
+//Remove Item Fm
 fmFunctions.removeItemFm = async (req, res) => {
   try {
     const { item_id, user_id } = req.body;
@@ -464,11 +464,125 @@ fmFunctions.getContactInfo = async (req, res) => {
   }
 }
 
+
+//createPromotionFM
+fmFunctions.createPromotionFM = async (req, res) => {
+  try {
+    const {
+      type,
+      userID,
+      itemID,
+      since,
+      until,
+      gender,
+      age_min,
+      age_max,
+      place,
+      images,
+      categories,
+      status
+    } = req.body;
+
+    const data = new PromotionFm({
+      type: type,
+      userID: userID,
+      itemID:itemID,
+      since: since,
+      until: until,
+      gender: gender,
+      age_min: age_min,
+      age_max: age_max,
+      place: place,
+      images: images,
+      categories: categories,
+      status: status
+    });
+    await data.save();
+    res.json({ msg: "Creada con éxito promoción FM" });
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+}; 
+
+
+//Approve Promotion FM
+fmFunctions.approvePromotionFM = async (req, res) => {
+  try {
+const { promotionID, passed } = req.body;
+const query = {_id: promotionID}
+const update = { $set :{ "passed": passed}}
+
+await PromotionFm.findByIdAndUpdate(query, update)
+
+res.json({ msg: "Aprobada con éxito promoción fm" });
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+}; 
+
+//Deny PromotionFM
+fmFunctions.denyPromotionFM = async (req, res) => {
+  try {
+    const { promotionID, passed } = req.body;
+    const query = {_id: promotionID}
+    const update = { $set :{ "passed": passed}}
+    
+    await PromotionFm.findByIdAndUpdate(query, update)
+    
+    
+    
+    res.json({ msg: "Rechazada con éxito promoción fm" });
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+}; 
+
+//filtersPromotionFM
+fmFunctions.filtersPromotionFM = async (req, res) => {
+  try {
+    const {
+      gender = false,age = false,place = false,categories = false,} = req.body;
+      
+          /*   const categoriesLower = categories.map(element => {
+              return element.toLowerCase();
+            }); */ //<== Guardado por si acaso utilizar despues
+      
+          const query =
+            {
+              age_min: { $lte: age ? age : 99999 },
+              age_max: { $gte: age ? age : 0 },
+              gender: gender ? gender : { $exists: true },
+              "place.country": place.country ? place.country : { $exists: true },
+              "place.state": place.state ? place.state : { $exists: true },
+              "place.city": place.city ? place.city : { $exists: true },
+              categories: categories ? { $all: categories } : { $exists: true },
+            }
+      console.log(query)
+          let result = await PromotionFm.find(query);
+      
+          res.send(result);
+  } catch (err) {
+    res.status(500).json({
+      msg: err.message,
+    });
+  }
+}; 
+
+
+
+export default fmFunctions;
+
 /*
 //
 fmFunctions.name = async (req, res) => {
   try {
-   
+    res.send('hello word')
   } catch (err) {
     res.status(500).json({
       msg: err.message,
@@ -476,8 +590,3 @@ fmFunctions.name = async (req, res) => {
   }
 }; 
 */
-
-
-export default fmFunctions;
-
-

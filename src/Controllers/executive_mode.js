@@ -911,7 +911,7 @@ executiveFunctions.approveExecutive = async (req, res) => {
     })
   }
 }
-//approve Executive
+//Approve Executive
 executiveFunctions.denyExecutive = async (req, res) => {
   try {
     const { id } = req.body
@@ -929,7 +929,7 @@ executiveFunctions.denyExecutive = async (req, res) => {
     })
   }
 }
-
+//Create Promotion
 executiveFunctions.createPromotion = async (req, res) => {
   try {
     const {
@@ -974,7 +974,7 @@ executiveFunctions.createPromotion = async (req, res) => {
       address: address,
     });
     await data.save();
-    res.json({ msg: "Experiencia laboral registrada con exito" });
+    res.json({ msg: "Creada con éxito promoción Executive" });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -983,7 +983,7 @@ executiveFunctions.createPromotion = async (req, res) => {
   }
 };
 
-//approve Promotion
+//Approve Promotion
 executiveFunctions.approvePromotion = async (req, res) => {
   try {
 const { promotionID, passed } = req.body;
@@ -1004,7 +1004,7 @@ res.json({ msg: "Aprobada con éxito promoción" });
   }
 }
 
-//deny Promotion
+//Deny Promotion
 executiveFunctions.denyPromotion = async (req, res) => {
   try {
     const { promotionID, passed } = req.body;
