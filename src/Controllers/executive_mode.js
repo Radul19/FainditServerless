@@ -6,8 +6,7 @@ import uploadFile from '@/helpers/uploadFile';
 import uploadMultipleImages from '@/helpers/uploadMultipleImages';
 import deleteMultipleImages from '@/helpers/deleteMultipleImages';
 import { User } from '@/Models/Users_Schemas';
-import { query } from 'express';
-import { title } from 'process';
+
 
 
 const executiveFunctions = {};
@@ -912,7 +911,7 @@ executiveFunctions.approveExecutive = async (req, res) => {
     })
   }
 }
-//approve Executive
+//Approve Executive
 executiveFunctions.denyExecutive = async (req, res) => {
   try {
     const { id } = req.body
@@ -930,7 +929,7 @@ executiveFunctions.denyExecutive = async (req, res) => {
     })
   }
 }
-
+//Create Promotion
 executiveFunctions.createPromotion = async (req, res) => {
   try {
     const {
@@ -975,7 +974,7 @@ executiveFunctions.createPromotion = async (req, res) => {
       address: address,
     });
     await data.save();
-    res.json({ msg: "Experiencia laboral registrada con exito" });
+    res.json({ msg: "Creada con éxito promoción Executive" });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -984,7 +983,7 @@ executiveFunctions.createPromotion = async (req, res) => {
   }
 };
 
-//approve Promotion
+//Approve Promotion
 executiveFunctions.approvePromotion = async (req, res) => {
   try {
 const { promotionID, passed } = req.body;
@@ -1005,7 +1004,7 @@ res.json({ msg: "Aprobada con éxito promoción" });
   }
 }
 
-//deny Promotion
+//Deny Promotion
 executiveFunctions.denyPromotion = async (req, res) => {
   try {
     const { promotionID, passed } = req.body;
@@ -1028,68 +1027,38 @@ executiveFunctions.denyPromotion = async (req, res) => {
 
 //filters Promotion
 executiveFunctions.filtersPromotion = async (req, res) => {
-    try {
-      /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
-      const { gender = false, age = false, place = false, categories = false} = req.body;
-  
-      const query = {
-        title: title ? new RegExp(title, "i") : { $exists: true },
+  try {
+    /// En caso de no aplicar algun filtro, se envia FALSE y se busca todo del mismo
+    const {
+gender = false,age = false,place = false,categories = false,} = req.body;
+
+    /*   const categoriesLower = categories.map(element => {
+        return element.toLowerCase();
+      }); */ //<== Guardado por si acaso utilizar despues
+
+    const query =
+      {
+        age_min: { $lte: age ? age : 99999 },
+        age_max: { $gte: age ? age : 0 },
+        gender: gender ? gender : { $exists: true },
         "place.country": place.country ? place.country : { $exists: true },
         "place.state": place.state ? place.state : { $exists: true },
         "place.city": place.city ? place.city : { $exists: true },
         categories: categories ? { $all: categories } : { $exists: true },
       }
-  
-      /// TO UPDATE SEARCH JUST IN CASE
-  /*     const updatedResult = await FM_Item.updateMany(query, {
-        $inc: { insearch: 1 }
-      });
-   */
-  
-      let result = await Promotion.find(query)
-      // let arrUsers
-  
-      // IF FILTER BY USER STARS
-      // if (stars) {
-  
-      //   let arrId = result.map(item => {
-      //     return mongoose.Types.ObjectId(item.ownerId)
-      //   })
-  
-      //   arrUsers = await User.aggregate([{
-      //     $match: {
-      //       $expr: {
-      //         $gte: [{ $avg: '$stars' }, stars],
-      //       },
-      //       "_id": { "$in": arrId }
-      //     },
-      //   },
-      //   { $group: { _id: "$_id" } }])
-  
-      //   arrUsers.forEach((item, index) => {
-      //     arrUsers[index] = item._id.toString()
-      //   })
-  
-      //   result = result.filter(item => arrUsers.includes(item.ownerId)
-      //     // console.log(arrUsers.some(id => id === item.ownerId))
-      //   )
-  
-      // }
-  
-      //await convertFileNameToUrl(result)
-  
-      res.send(result)
-      // res.send({ ok: true })
-  
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        msg: "Error inesperado",
-      });
-    }
-  } 
 
-export default executiveFunctions
+    let result = await Promotion.find(query);
+
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error inesperado",
+    });
+  }
+};
+
+export default executiveFunctions;
 //
 // executiveFunctions.name = async (req, res) => {
 //   try {

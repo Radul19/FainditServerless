@@ -6,7 +6,7 @@ const router = Router();
 
 
 
-const { denunciate, addFavorites, editArticle, findFmiItem, createAnArticle, getAllFmItems, getAllFmFavItems, getAllMyFmItems, removeItemFm, getContactInfo, fmClickedItem, fmContactedItem } = fmFunctions
+const { denunciate, addFavorites, editArticle, findFmiItem, createAnArticle, getAllFmItems, getAllFmFavItems, getAllMyFmItems, removeItemFm, getContactInfo, fmClickedItem, fmContactedItem, createPromotionFM, approvePromotionFM, denyPromotionFM, filtersPromotionFM } = fmFunctions
 
 //// FAINDIT MARKET ROUTES
 
@@ -35,6 +35,12 @@ router.get('/getContactInfo/:id', getContactInfo);
 router.post('/fmClickedItem', fmClickedItem);
 //remove item the Fm
 router.post('/fmContactedItem', fmContactedItem);
-
-
+//create Promotion FM
+router.post('/createPromotionFM', createPromotionFM);
+//Approve Promotion FM
+router.post('/approvePromotionFM', approvePromotionFM);
+//Deny Promotion FM
+router.post('/denyPromotionFM', denyPromotionFM);
+//Filters Promotion FM
+router.post('/filtersPromotionFM', filtersPromotionFM);
 export default router
