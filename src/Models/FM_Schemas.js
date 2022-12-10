@@ -58,7 +58,31 @@ const PromotionFmSchema = new Schema({
   timestamps: true
 })
 
+const PromotionJobsSchema = new Schema({
+  type: { type: Number, required: true },
+  userID: { type: String, required: true },
+  itemID: { type: String, required: true },
+  since: { type: Date, required: true},
+  until: { type: Date, required: false },
+  gender: { type: Number, required: true },
+  age_min: { type: Number, required: true },
+  age_max: { type: Number, required: true },
+  place:   {
+    country: { type: String, required: true },
+    state: { type: String, required: true },
+    city: { type: String, required: true }
+  },
+  images: { type: Array, required: true },
+  categories: { type: Array, required: true },
+  status: { type: Boolean, required: true },
+  passed: { type: Number, required: true, default: 2 }
+}, {
+  timestamps: true
+})
+
+
 export const FM_Item = model('FM_Item', FM_ItemSchema)
 export const denunciate = model('denunciate', denunciateSchema)
 export const denunciatesVacant = model('denunciatesVacant', denunciatesVacantSchema)
 export const PromotionFm = model('PromotionFm', PromotionFmSchema)
+export const PromotionJobs = model('PromotionJobs', PromotionJobsSchema)

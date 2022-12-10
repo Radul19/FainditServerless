@@ -6,6 +6,7 @@ import uploadFile from '@/helpers/uploadFile';
 import uploadMultipleImages from '@/helpers/uploadMultipleImages';
 import deleteMultipleImages from '@/helpers/deleteMultipleImages';
 import { User } from '@/Models/Users_Schemas';
+import mongoose from 'mongoose';
 
 
 
