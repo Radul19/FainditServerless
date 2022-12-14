@@ -2,7 +2,7 @@ import { GetBucketAnalyticsConfigurationCommand } from "@aws-sdk/client-s3";
 import { User } from "../Models/Users_Schemas";
 import mongoose from 'mongoose'
 import { Executive, Vacant } from "@/Models/Executive_Schemas";
-import { denunciatesVacant } from '../Models/FM_Schemas';
+import { denunciatesVacant, PromotionJobs } from '../Models/FM_Schemas';
 const jobFunctions = {};
 
 ///////////////////////////////////////
@@ -549,6 +549,122 @@ jobFunctions.reportVacant = async (req, res) => {
     res.status(200).json({
       msg: 'Vacante reportado con exito'
     })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//create Promotion Jobs
+jobFunctions.createPromotionJobs =  async (req, res) => {
+  try {
+
+    const {
+      type,
+      userID,
+      itemID,
+      since,
+      until,
+      gender,
+      age_min,
+      age_max,
+      place,
+      images,
+      categories,
+      status
+    } = req.body;
+
+    const data = new PromotionJobs({
+      type: type,
+      userID: userID,
+      itemID:itemID,
+      since: since,
+      until: until,
+      gender: gender,
+      age_min: age_min,
+      age_max: age_max,
+      place: place,
+      images: images,
+      categories: categories,
+      status: status
+    });
+    await data.save();
+    res.json({ msg: "Creada con éxito promoción Jobs" });
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+//filters Promotion Jobs
+jobFunctions.filtersPromotionJobs =  async (req, res) => {
+  try {
+
+    const {
+      gender = false,age = false,place = false,categories = false,} = req.body;
+      
+          /*   const categoriesLower = categories.map(element => {
+              return element.toLowerCase();
+            }); */ //<== Guardado por si acaso utilizar despues
+      
+          const query =
+            {
+              age_min: { $lte: age ? age : 99999 },
+              age_max: { $gte: age ? age : 0 },
+              gender: gender ? gender : { $exists: true },
+              "place.country": place.country ? place.country : { $exists: true },
+              "place.state": place.state ? place.state : { $exists: true },
+              "place.city": place.city ? place.city : { $exists: true },
+              categories: categories ? { $all: categories } : { $exists: true },
+            }
+      console.log(query)
+          let result = await PromotionJobs.find(query);
+      
+          res.send(result);
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+//Approve Promotion Jobs
+jobFunctions.approvePromotionJobs =  async (req, res) => {
+  try {
+    const { promotionID, passed } = req.body;
+    const query = {_id: promotionID}
+    const update = { $set :{ "passed": passed}}
+    
+    await PromotionJobs.findByIdAndUpdate(query, update)
+    
+    res.json({ msg: "Aprobada con éxito promoción Jobs" });
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      msg: 'Error inesperado'
+    })
+  }
+}
+
+//Deny Promotion Jobs
+jobFunctions.denyPromotionJobs =  async (req, res) => {
+  try {
+
+    const { promotionID, passed } = req.body;
+    const query = {_id: promotionID}
+    const update = { $set :{ "passed": passed}}
+    
+    await PromotionJobs.findByIdAndUpdate(query, update)
+    
+    
+    
+    res.json({ msg: "Rechazada con éxito promoción jobs" });
 
   } catch (error) {
     console.log(error)
